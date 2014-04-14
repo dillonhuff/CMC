@@ -1,5 +1,5 @@
 module Parser(
-	parseAssignment) where
+	parseAssignments) where
 
 import ErrorHandling
 import Expression
@@ -7,11 +7,11 @@ import Lexer
 import Text.Parsec
 import Text.Parsec.Expr
 
-parseAssignment :: String -> Error Expression
-parseAssignment str = (lexer str) >>= parseAsg
+parseAssignments :: String -> Error [Expression]
+parseAssignments str = (lexer str) >>= parseAssigns
 
-parseAsg :: [PosTok] -> Error Expression
-parseAsg toks = case parse pAssign "Parser" toks of
+parseAssigns :: [PosTok] -> Error [Expression]
+parseAssigns toks = case parse (many1 pAssign) "Parser" toks of
 	Left err -> Failed $ show err
 	Right asg -> Succeeded asg
 

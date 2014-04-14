@@ -1,5 +1,5 @@
 module TypeSystem(
-	computeType,
+	Type, computeType, TypeConstraint, typeConstraint,
 	typeVar, defMatrix, genMatrix,
 	leftDefMatrix, rightDefMatrix, func) where
 
@@ -51,8 +51,11 @@ showType (Dimension n) = show n
 
 type TypeConstraint = (Type, Type)
 
+typeConstraint :: Type -> Type -> TypeConstraint
+typeConstraint t1 t2 = (t1, t2)
+
 computeType :: [TypeConstraint] -> Error Type
-computeType constraints = Succeeded $ doSub unifyingSubs (TypeVar "t0")
+computeType constraints = Succeeded $ doSub unifyingSubs (TypeVar "t-0")
 	where
 		unifyingSubs = unify constraints
 

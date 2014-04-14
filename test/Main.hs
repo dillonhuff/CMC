@@ -6,3 +6,5 @@ import ParserTests
 main = do
 	lexerTests
 	parserTests
+	typeSystemTests
+	expressionTests

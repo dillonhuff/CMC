@@ -73,7 +73,7 @@ pParens e = do
 table =
 	[[postfixOp "!", postfixOp "'"]
 	,[prefixOp "-"]
-	,[infixOp "*", infixOp "/"]
+	,[infixOp "*", infixOp "/", infixOp ".*"]
 	,[infixOp "+", infixOp "-"]]
 
 prefixOp opStr = Prefix $ doUnoperator opStr
@@ -81,11 +81,11 @@ postfixOp opStr = Postfix $ doUnoperator opStr
 infixOp opStr = Infix (doBinop opStr) AssocLeft
 
 doUnoperator opStr = do
-	opVal <- cmcTok (idTok opStr)
+	opVal <- cmcTok (opTok opStr)
 	return $ unaryOp (operator opStr)
 
 doBinop opStr = do
-	opVal <- cmcTok (idTok opStr)
+	opVal <- cmcTok (opTok opStr)
 	return $ binaryOp (operator opStr)
 
 identifierTok :: (Monad m) => ParsecT [PosTok] u m PosTok

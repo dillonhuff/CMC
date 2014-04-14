@@ -20,6 +20,10 @@ isMatrix :: Type -> Bool
 isMatrix (Matrix _ _) = True
 isMatrix _ = False
 
+isTypeVar :: Type -> Bool
+isTypeVar (TypeVar _) = True
+isTypeVar _ = False
+
 dimension :: Int -> Type
 dimension n = Dimension n
 
@@ -38,7 +42,6 @@ rightDefMatrix v1 c = Matrix (typeVar v1) (dimension c)
 typeVar name = TypeVar name
 
 func t1 t2 = Func t1 t2
-
 
 showType :: Type -> String
 showType (TypeVar name) = name
@@ -82,11 +85,16 @@ nextSub (Matrix v1 v2, Matrix v3 v4) = [(Matrix v1 v2, Matrix v3 v4)]
 nextSub _ = []
 
 nextTerms :: (Type, Type) -> [(Type, Type)]
-nextTerms (TypeVar n1, TypeVar n2) = []
+nextTerms (TypeVar _, TypeVar _) = []
+nextTerms (Dimension n, Dimension m) = if n == m
+	then []
+	else error $ "Dimensions " ++ show n ++ " and " ++ show m ++ " don't match"
 nextTerms (s, TypeVar n) = [(TypeVar n, s)]
 nextTerms (Func t1 t2, Func t3 t4) = [(t1, t3), (t2, t4)]
 nextTerms (Matrix r1 c1, Matrix r2 c2) = [(r1, r2), (c1, c2)]
-nextTerms _ = []
+nextTerms (s, t) = if (not $ isTypeVar s) && (not $ isTypeVar t)
+	then error $ "Cannot substitute type " ++ show t ++ " for type " ++ show s
+	else []
 
 var :: Type -> [Type]
 var t@(TypeVar _) = [t]

@@ -21,34 +21,55 @@ lexCases =
 	,decimalNum
 	,decimalAndExp
 	,decimalAndNegExp
-	,leadingZerosAndNegExp]
+	,leadingZerosAndNegExp
+	,lparen
+	,rparen
+	,lbracket
+	,rbracket
+	,comma
+	,equals
+	,semicolon]
 
-plusOP = ("+", [opTok "+"])
+plusOP = ("+", [opPosTok "+"])
 
-minusOP = ("-", [opTok "-"])
+minusOP = ("-", [opPosTok "-"])
 
-timesOP = ("*", [opTok "*"])
+timesOP = ("*", [opPosTok "*"])
 
-invertOp = ("!", [opTok "!"])
+invertOp = ("!", [opPosTok "!"])
 
-transposeOp = ("'", [opTok "'"])
+transposeOp = ("'", [opPosTok "'"])
 
-scalarTimesOP = (".*", [opTok ".*"])
+scalarTimesOP = (".*", [opPosTok ".*"])
 
-varName = ("A", [varTok "A"])
+varName = ("A", [identifierPosTok "A"])
 
-longVarName = ("A12eirntDue232", [varTok "A12eirntDue232"])
+longVarName = ("A12eirntDue232", [identifierPosTok "A12eirntDue232"])
 
-digitsOnlyNum = ("123", [floatTok $ (read :: String -> Float) "123"])
+digitsOnlyNum = ("123", [floatPosTok $ (read :: String -> Float) "123"])
 
-digitsAndExpNum = ("123e3", [floatTok 123e3])
+digitsAndExpNum = ("123e3", [floatPosTok 123e3])
 
-digitsAndUpperExpNum = ("34E45", [floatTok 34E45])
+digitsAndUpperExpNum = ("34E45", [floatPosTok 34E45])
 
-decimalNum = ("3.1415", [floatTok 3.1415])
+decimalNum = ("3.1415", [floatPosTok 3.1415])
 
-decimalAndExp = ("3.14159E23", [floatTok 3.14159E23])
+decimalAndExp = ("3.14159E23", [floatPosTok 3.14159E23])
 
-decimalAndNegExp = ("3.14159e-4", [floatTok 3.14159e-4])
+decimalAndNegExp = ("3.14159e-4", [floatPosTok 3.14159e-4])
 
-leadingZerosAndNegExp = ("00000.000312E-2", [floatTok 0.000312E-2])
+leadingZerosAndNegExp = ("00000.000312E-2", [floatPosTok 0.000312E-2])
+
+lparen = ("(", [lparenPosTok])
+
+rparen = (")", [rparenPosTok])
+
+lbracket = ("[", [lbracketPosTok])
+
+rbracket = ("]", [rbracketPosTok])
+
+comma = (",", [commaPosTok])
+
+equals = ("=", [equalsPosTok])
+
+semicolon = (";", [semicolonPosTok])

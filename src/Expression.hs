@@ -50,7 +50,9 @@ builtins =
 	,(Op "'", func (genMatrix "a" "b") (genMatrix "b" "a"))
 	,(Op "!", func (genMatrix "a" "a") (genMatrix "a" "a"))
 	,(Op "+", func (genMatrix "a" "b") (func (genMatrix "a" "b") (genMatrix "a" "b")))
-	,(Op "-", func (genMatrix "a" "b") (func (genMatrix "a" "b") (genMatrix "a" "b")))]
+	,(Op "-", func (genMatrix "a" "b") (func (genMatrix "a" "b") (genMatrix "a" "b")))
+	,(Op "*", func (genMatrix "a" "b") (func (genMatrix "b" "c") (genMatrix "a" "c")))
+	,(Op ".*", func (defMatrix 1 1) (func (genMatrix "a" "b") (genMatrix "a" "b")))]
 
 -- TODO: find more elegant way to deal with unary vs. binary '-'
 getExprConstraints :: [(Expression, Type)] -> String -> Expression -> [TypeConstraint]

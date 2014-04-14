@@ -1,4 +1,5 @@
-module TypeSystemTests() where
+module TypeSystemTests(
+	typeSystemTests) where
 
 import ErrorHandling
 import TestUtils

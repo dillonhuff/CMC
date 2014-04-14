@@ -1,4 +1,5 @@
-module LexerTests() where
+module LexerTests(
+	lexerTests) where
 
 import ErrorHandling
 import Lexer

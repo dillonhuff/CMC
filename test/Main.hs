@@ -1,3 +1,8 @@
 module Main(main) where
 
-main = putStrLn "No code yet"
+import LexerTests
+import ParserTests
+
+main = do
+	lexerTests
+	parserTests

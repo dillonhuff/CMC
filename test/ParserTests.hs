@@ -6,8 +6,7 @@ import Expression
 import Parser
 import TestUtils
 
-parserTests = do
-	testFunction (extractValue . parseAssignments) parseCases
+parserTests = testFunction (extractValue . parseAssignments) parseCases
 
 parseCases =
 	[scalarAssign

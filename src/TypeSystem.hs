@@ -71,21 +71,6 @@ doSub s t@(TypeVar _) = case lookup t s of
 	Nothing -> t
 doSub s t = t
 
-{-subMatrix :: Sub -> Type -> Type
-subMatrix s m@(Matrix r c) = matrixDimensionSub s r c
-
-matrixDimensionSub :: Sub -> Type -> Type -> Type
-matrixDimensionSub s r c = Matrix newR newC
-	where
-		matrixSubs = filter (\(s1, s2) -> isMatrix s1) s
-		matrixDimSubs = concat $ map matSubToDimSubs matrixSubs
-		newR = case lookup r matrixDimSubs of
-			Nothing -> r
-			Just sVal -> sVal
-		newC = case lookup c matrixDimSubs of
-			Nothing -> c
-			Just sVal -> sVal-}
-
 matSubToDimSubs :: (Type, Type) -> Sub
 matSubToDimSubs (Matrix r1 c1, Matrix r2 c2) = [(r1, r2), (c1, c2)]
 

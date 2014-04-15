@@ -1,11 +1,27 @@
 module Parser(
-	parseAssignments) where
+	parseAssignments,
+	parseFunction,
+	function) where
 
 import ErrorHandling
 import Expression
 import Lexer
 import Text.Parsec
 import Text.Parsec.Expr
+
+data Function = FC Expression [Expression] [Expression] [Expression]
+	deriving (Eq, Show)
+
+function :: Expression -> [Expression] -> [Expression] -> [Expression] -> Function
+function name args body returnVals = FC name args body returnVals
+
+parseFunction :: String -> Error Function
+parseFunction str = (lexer str) >>= parseFunc
+
+parseFunc :: [PosTok] -> Error Function
+parseFunc toks = case parse pFunc "ParseFunc" toks of
+	Left err -> Failed $ show err
+	Right f -> Succeeded f
 
 parseAssignments :: String -> Error [Expression]
 parseAssignments str = (lexer str) >>= parseAssigns
@@ -23,12 +39,27 @@ makeMatrix elements = matrix rows cols flatElems
 		rows = length elements
 		cols = length $ head elements
 
+pFunc = do
+	cmcTok funcTok
+	name <- pFuncId
+	args <- pArgList
+	body <- many1 pAssign
+	cmcTok returnTok
+	retVals <- pArgList
+	return $ function name args body retVals
+
+pArgList = pParens (sepBy pIdentifier (cmcTok commaTok))
+
 pAssign = do
 	name <- pIdentifier
 	cmcTok equalsTok
 	body <- pExpr
 	cmcTok semicolonTok
 	return $ assign name body
+
+pFuncId = do
+	fId <- functionIdTok
+	return $ funcall $ tokName fId
 
 pIdentifier = do
 	idTok <- identifierTok
@@ -90,6 +121,9 @@ doBinop opStr = do
 
 identifierTok :: (Monad m) => ParsecT [PosTok] u m PosTok
 identifierTok = tokOfType isIdentifierTok
+
+functionIdTok :: (Monad m) => ParsecT [PosTok] u m PosTok
+functionIdTok = tokOfType isFuncIdTok
 
 scalarTok :: (Monad m) => ParsecT [PosTok] u m PosTok
 scalarTok = tokOfType isFloatTok

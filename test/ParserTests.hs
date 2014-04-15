@@ -6,7 +6,9 @@ import Expression
 import Parser
 import TestUtils
 
-parserTests = testFunction (extractValue . parseAssignments) parseCases
+parserTests = do
+	testFunction (extractValue . parseAssignments) parseCases
+	testFunction (extractValue . parseFunction) parseFuncCases
 
 parseCases =
 	[scalarAssign
@@ -21,6 +23,10 @@ parseCases =
 	,timesAssign
 	,scalarTimesAssign
 	,multiAssign]
+
+parseFuncCases =
+	[simpleFunc
+	,multiReturnFunc]
 
 scalarAssign = ("A = 4;", [assign (identifier "A") (float 4)])
 
@@ -86,3 +92,17 @@ multiAssign = ("S = [1 2.3; 3 4]; K = -(S + [-9 -9.8E-3; 3 7]);",
 			(operator "+")
 			(identifier "S")
 			(matrix 2 2 [-9, -9.8e-3, 3, 7])))])
+
+simpleFunc = ("func noWay(A, B) A = B; return(A)",
+	function
+		(funcall "noWay")
+		[identifier "A", identifier "B"]
+		[assign (identifier "A") (identifier "B")]
+		[identifier "A"])
+
+multiReturnFunc = ("func ohNo12(C) C = [1 2; 3 4]; return(A, B, C)",
+	function
+		(funcall "ohNo12")
+		[identifier "C"]
+		[assign (identifier "C") (matrix 2 2 [1, 2, 3, 4])]
+		[identifier "A", identifier "B", identifier "C"])

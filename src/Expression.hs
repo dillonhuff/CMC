@@ -1,6 +1,6 @@
 module Expression(
 	Expression,
-	assign, operator,
+	assign, operator, funcall,
 	unaryOp, binaryOp,
 	float, matrix, identifier,
 	typeOfExpr) where
@@ -10,6 +10,7 @@ import TypeSystem
 
 data Expression
 	= Identifier String
+	| Funcall String
 	| Assign Expression Expression
 	| Matrix Int Int [Float]
 	| UnaryOp Expression Expression
@@ -22,6 +23,9 @@ assign e1 e2 = Assign e1 e2
 
 identifier :: String -> Expression
 identifier name = Identifier name
+
+funcall :: String -> Expression
+funcall name = Funcall name
 
 operator name = Op name
 

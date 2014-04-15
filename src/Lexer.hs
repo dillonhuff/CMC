@@ -3,16 +3,17 @@ module Lexer(
 	opTok, idTok, floatTok, tokName,
 	floatTokValue,
 	isIdentifierTok, isOperatorTok, isFloatTok,
+	isFuncIdTok,
 	floatPosTok, identifierPosTok,
-	opPosTok,
+	opPosTok, funcIdPosTok,
 	lparenPosTok, rparenPosTok,
 	lbracketPosTok, rbracketPosTok,
 	commaPosTok, equalsPosTok,
-	semicolonPosTok,
+	semicolonPosTok, funcPosTok, returnPosTok,
 	lparenTok, rparenTok,
 	lbracketTok, rbracketTok,
-	commaTok, equalsTok,
-	semicolonTok) where
+	commaTok, equalsTok, funcIdTok,
+	semicolonTok, funcTok, returnTok) where
 
 import ErrorHandling
 import Text.Parsec.Pos
@@ -51,7 +52,11 @@ isFloatTok _ = False
 isIdentifierTok (Var _) = True
 isIdentifierTok _ = False
 
+isFuncIdTok (FuncId _) = True
+isFuncIdTok _ = False
+
 tokName (PT (Var name) _) = name
+tokName (PT (FuncId name) _) = name
 tokName (PT (Op name) _) = name
 
 floatTokValue (PT (FloatTok val) _) = val
@@ -60,6 +65,7 @@ dummyPosTok :: Tok -> PosTok
 dummyPosTok t = PT t (newPos "DUMMY" 0 0)
 
 identifierPosTok name = dummyPosTok (Var name)
+funcIdPosTok name = dummyPosTok (FuncId name)
 opPosTok name = dummyPosTok (Op name)
 floatPosTok value = dummyPosTok (FloatTok value)
 lparenPosTok = dummyPosTok LPAREN
@@ -69,8 +75,11 @@ rbracketPosTok = dummyPosTok RBRACKET
 commaPosTok = dummyPosTok COMMA
 equalsPosTok = dummyPosTok EQUALS
 semicolonPosTok = dummyPosTok SEMICOLON
+funcPosTok = dummyPosTok FUNC
+returnPosTok = dummyPosTok RETURN
 
 idTok name = (Var name)
+funcIdTok name = (FuncId name)
 opTok name = (Op name)
 floatTok value = (FloatTok value)
 lparenTok = LPAREN
@@ -80,10 +89,13 @@ rbracketTok = RBRACKET
 commaTok = COMMA
 equalsTok = EQUALS
 semicolonTok = SEMICOLON
+funcTok = FUNC
+returnTok = RETURN
 
 data Tok
 	= Op String
 	| Var String
+	| FuncId String
 	| FloatTok Float
 	| LPAREN
 	| RPAREN
@@ -92,20 +104,24 @@ data Tok
 	| SEMICOLON
 	| COMMA
 	| EQUALS
+	| FUNC
+	| RETURN
 	deriving (Eq, Show)
 
 reservedTokens =
 	[("(", LPAREN), (")", RPAREN)
 	,("[", LBRACET), ("]", RBRACKET)
 	,("=", EQUALS), (",", COMMA)
-	,(";", SEMICOLON)]
+	,(";", SEMICOLON), ("return", RETURN)
+	,("func", FUNC)]
 
 pToks = endBy pTok spaces
 
 pTok = do
 	pos <- getPosition
 	tok <- pOpTok
-		<|> pReservedTok
+		<|> try pReservedTok
+		<|> try pFuncIdTok
 		<|> pVarTok
 		<|> pFloatTok
 	return $ PT tok pos
@@ -127,9 +143,16 @@ pReservedTok = do
 		<|> string "="
 		<|> string ","
 		<|> string ";"
+		<|> string "return"
+		<|> string "func"
 	return $ case lookup reserved reservedTokens of
 		Just t -> t
 		Nothing -> error $ "No such token as " ++ reserved
+
+pFuncIdTok = do
+	firstChar <- lower
+	rest <- many alphaNum
+	return $ FuncId (firstChar:rest)
 
 pVarTok = do
 	startChar <- upper

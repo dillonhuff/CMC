@@ -9,4 +9,4 @@ main = do
 	let fileName = head arguments
 	fileHandle <- openFile fileName ReadMode
 	contents <- hGetContents fileHandle
-	putStrLn $ show $ parseAssignments contents
+	putStrLn $ show $ parseFunction contents

@@ -15,6 +15,7 @@ lexCases =
 	,invertOp
 	,transposeOp
 	,varName
+	,funcName
 	,longVarName
 	,digitsOnlyNum
 	,digitsAndExpNum
@@ -29,7 +30,9 @@ lexCases =
 	,rbracket
 	,comma
 	,equals
-	,semicolon]
+	,semicolon
+	,func
+	,ret]
 
 plusOP = ("+", [opPosTok "+"])
 
@@ -44,6 +47,8 @@ transposeOp = ("'", [opPosTok "'"])
 scalarTimesOP = (".*", [opPosTok ".*"])
 
 varName = ("A", [identifierPosTok "A"])
+
+funcName = ("aTestFunc12", [funcIdPosTok "aTestFunc12"])
 
 longVarName = ("A12eirntDue232", [identifierPosTok "A12eirntDue232"])
 
@@ -74,3 +79,7 @@ comma = (",", [commaPosTok])
 equals = ("=", [equalsPosTok])
 
 semicolon = (";", [semicolonPosTok])
+
+func = ("func", [funcPosTok])
+
+ret = ("return", [returnPosTok])

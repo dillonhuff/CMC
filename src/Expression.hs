@@ -1,12 +1,18 @@
 module Expression(
-	Expression,
+	Expression, Function,
 	assign, operator, funcall,
-	unaryOp, binaryOp,
+	unaryOp, binaryOp, function,
 	float, matrix, identifier,
-	typeOfExpr) where
+	typeOfExpr, checkFunctionTypes) where
 
 import ErrorHandling
 import TypeSystem
+
+data Function = FC Expression [Expression] [Expression] [Expression]
+	deriving (Eq, Show)
+
+function :: Expression -> [Expression] -> [Expression] -> [Expression] -> Function
+function name args body returnVals = FC name args body returnVals
 
 data Expression
 	= Identifier String
@@ -43,11 +49,24 @@ matrix rows cols vals = Matrix rows cols vals
 float :: Float -> Expression
 float val = Matrix 1 1 [val]
 
--- Code to determine the type of an expression
-typeOfExpr :: Expression -> Error Type
-typeOfExpr expr = computeType constraints
+checkFunctionTypes :: Function -> Error [Type]
+checkFunctionTypes (FC name args body returnVals) = outputTypes
 	where
-		constraints = getExprConstraints builtins "t-0" expr
+		inputTypes = []
+		allValTypes = valTypes inputTypes body
+		outputTypes = allValTypes >>= (getOutTypes returnVals)
+
+valTypes :: [(Expression, Type)] -> [Expression] -> Error [(Expression, Type)]
+valTypes _ _ = Succeeded []
+
+getOutTypes :: [Expression] -> [(Expression, Type)] -> Error [Type]
+getOutTypes _ _ = Succeeded []
+
+-- Code to determine the type of an expression
+typeOfExpr :: [(Expression, Type)] -> Expression -> Error Type
+typeOfExpr idTypes expr = computeType constraints
+	where
+		constraints = getExprConstraints (builtins ++ idTypes) "t-0" expr
 
 builtins =
 	[(Op "unary--", func (genMatrix "a" "b") (genMatrix "a" "b"))

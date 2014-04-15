@@ -1,19 +1,12 @@
 module Parser(
 	parseAssignments,
-	parseFunction,
-	function) where
+	parseFunction, parseFunc) where
 
 import ErrorHandling
 import Expression
 import Lexer
 import Text.Parsec
 import Text.Parsec.Expr
-
-data Function = FC Expression [Expression] [Expression] [Expression]
-	deriving (Eq, Show)
-
-function :: Expression -> [Expression] -> [Expression] -> [Expression] -> Function
-function name args body returnVals = FC name args body returnVals
 
 parseFunction :: String -> Error Function
 parseFunction str = (lexer str) >>= parseFunc

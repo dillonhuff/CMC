@@ -3,10 +3,13 @@ module ExpressionTests(
 
 import ErrorHandling
 import Expression
+import Parser
 import TestUtils
 import TypeSystem
 
-expressionTests = testFunction (extractValue . typeOfExpr) exprTypeCases
+expressionTests = do
+	testFunction (extractValue . (typeOfExpr [])) exprTypeCases
+	testFunction (extractValue . ((=<<) checkFunctionTypes) . parseFunction) functionTypeCases
 
 exprTypeCases =
 	[oneMatrix
@@ -17,6 +20,9 @@ exprTypeCases =
 	,minusOp
 	,timesOp
 	,scalarTimesOp]
+
+functionTypeCases =
+	[noArgFunction]
 
 oneMatrix = ((matrix 2 4 [1, 2, 3, 4, 5, 6, 7, 8]), defMatrix 2 4)
 
@@ -33,3 +39,5 @@ minusOp = (binaryOp (operator "-") (matrix 3 289 []) (matrix 3 289 []), defMatri
 timesOp = (binaryOp (operator "*") (matrix 38 29 []) (matrix 29 256 []), defMatrix 38 256)
 
 scalarTimesOp = (binaryOp (operator ".*") (matrix 1 1 [3.4]) (matrix 6 71 []), defMatrix 6 71)
+
+noArgFunction = ("func ohNo() X = [1.2]; return(X)", [defMatrix 1 1])

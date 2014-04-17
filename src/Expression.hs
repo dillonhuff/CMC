@@ -5,6 +5,8 @@ module Expression(
 	float, matrix, identifier,
 	typeOfExpr, checkFunctionTypes) where
 
+import Control.Monad
+import Data.Tuple
 import ErrorHandling
 import TypeSystem
 
@@ -49,12 +51,36 @@ matrix rows cols vals = Matrix rows cols vals
 float :: Float -> Expression
 float val = Matrix 1 1 [val]
 
-checkFunctionTypes :: Function -> Error [Type]
+-- Returns either an error or a list of all identifiers in the
+-- function (including input identifiers) along with their types
+checkFunctionTypes :: Function -> Error [(Expression, Type)]
 checkFunctionTypes (FC name args body returnVals) = outputTypes
 	where
-		inputTypes = []
-		allValTypes = valTypes inputTypes body
-		outputTypes = allValTypes >>= (getOutTypes returnVals)
+		inputTypes = makeInputVars args
+		outputTypes = foldM nextExprTypes inputTypes body
+
+makeInputVars :: [Expression] -> [(Expression, Type)]
+makeInputVars ids = zip ids (map idType ids)
+	where
+		idType (Identifier name) = genMatrix (name ++ "-row") (name ++ "-col")
+
+nextExprTypes :: [(Expression, Type)] -> Expression -> Error [(Expression, Type)]
+nextExprTypes curIds (Assign (Identifier name) expr) = nextTypes
+	where
+		exprTypeAndConstraints = typeOfExpr curIds expr
+		newIdType = liftM fst exprTypeAndConstraints
+		newId = liftM swap $ errorTuple newIdType (Identifier name) 
+		newTypeConstrs = liftM snd exprTypeAndConstraints
+		updatedIds = liftM (updateIds curIds) newTypeConstrs
+		nextTypes = liftM2 (:) newId updatedIds
+nextExprTypes _ expr = Failed $ show expr ++ " is not a properly formed assignment"
+
+updateIds :: [(Expression, Type)] -> [TypeConstraint] -> [(Expression, Type)]
+updateIds oldIds newConstraints = newIds
+	where
+		idNames = map fst oldIds
+		idTypes = map snd oldIds
+		newIds = zip idNames (map (doSub newConstraints) idTypes)
 
 valTypes :: [(Expression, Type)] -> [Expression] -> Error [(Expression, Type)]
 valTypes _ _ = Succeeded []
@@ -63,8 +89,8 @@ getOutTypes :: [Expression] -> [(Expression, Type)] -> Error [Type]
 getOutTypes _ _ = Succeeded []
 
 -- Code to determine the type of an expression
-typeOfExpr :: [(Expression, Type)] -> Expression -> Error Type
-typeOfExpr idTypes expr = computeType constraints
+typeOfExpr :: [(Expression, Type)] -> Expression -> Error (Type, [TypeConstraint])
+typeOfExpr idTypes expr = errorTuple (computeType constraints) constraints
 	where
 		constraints = getExprConstraints (builtins ++ idTypes) "t-0" expr
 

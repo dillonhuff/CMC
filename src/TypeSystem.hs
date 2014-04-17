@@ -1,6 +1,6 @@
 module TypeSystem(
 	Type, computeType, TypeConstraint, typeConstraint,
-	typeVar, defMatrix, genMatrix, doSubList,
+	typeVar, defMatrix, genMatrix, doSub,
 	leftDefMatrix, rightDefMatrix, func) where
 
 import Data.List

@@ -1,6 +1,7 @@
 module ExpressionTests(
 	expressionTests) where
 
+import Control.Monad
 import ErrorHandling
 import Expression
 import Parser
@@ -8,9 +9,9 @@ import TestUtils
 import TypeSystem
 
 expressionTests = do
-	testFunction (extractValue . (typeOfExpr [])) exprTypeCases
-	testFunction (extractValue . typeOfExpr testVars) exprWithVarsCases
-	--testFunction (extractValue . ((=<<) checkFunctionTypes) . parseFunction) functionTypeCases
+	testFunction (extractValue . (liftM fst) . (typeOfExpr [])) exprTypeCases
+	testFunction (extractValue . (liftM fst) . typeOfExpr testVars) exprWithVarsCases
+	testFunction (extractValue . ((=<<) checkFunctionTypes) . parseFunction) functionTypeCases
 
 exprTypeCases =
 	[oneMatrix
@@ -32,6 +33,11 @@ exprWithVarsCases =
 	,oneIdDefDimensions
 	,addTwo
 	,multiplyTwoGen]
+
+functionTypeCases =
+	[noArgFunc
+	,oneArgFunc
+	,oneArgArith]
 
 oneMatrix = ((matrix 2 4 [1, 2, 3, 4, 5, 6, 7, 8]), defMatrix 2 4)
 
@@ -56,3 +62,13 @@ addTwo = (binaryOp (operator "+") (identifier "A") (identifier "B"), defMatrix 1
 oneIdDefDimensions = (identifier "B", defMatrix 1 2)
 
 multiplyTwoGen = (binaryOp (operator "*") (identifier "A") (identifier "C"), genMatrix "A-row" "C-col")
+
+noArgFunc = ("func oh() A = [1 2; 1.0 2.3e4]; return(A)", [(identifier "A", defMatrix 2 2)])
+
+oneArgFunc = ("func testT(C) X = C; return(X)",
+	[(identifier "X", genMatrix "C-row" "C-col")
+	,(identifier "C", genMatrix "C-row" "C-col")])
+
+oneArgArith = ("func testD(U) X = U + [1; 2]; return (X, U)",
+	[(identifier "X", defMatrix 2 1)
+	,(identifier "U", defMatrix 2 1)])

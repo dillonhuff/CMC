@@ -1,6 +1,6 @@
 module TypeSystem(
-	Type, computeType, TypeConstraint, typeConstraint,
-	typeVar, defMatrix, genMatrix, unify,
+	Type, computeType, TypeConstraint, typeConstraint, dimension,
+	typeVar, defMatrix, genMatrix, unify, applySubstitutions,
 	leftDefMatrix, rightDefMatrix, func, uniqueTypeNames) where
 
 import Data.Char
@@ -98,6 +98,7 @@ unify (t:rest)
 	| nonVarAndVar t 		= unify ((flipTC t):rest)
 	| twoMatrices t 		= unify $ (matrixDimSubs t) ++ rest
 	| twoFuncs t 			= unify $ (funcSubs t) ++ rest
+	| isIdentity t 			= unify rest
 	| otherwise 			= error $ "no sub for " ++ show (t:rest)
 
 matrixDimSubs :: TypeConstraint -> [TypeConstraint]
@@ -147,6 +148,9 @@ twoMatrices _ = False
 twoFuncs :: TypeConstraint -> Bool
 twoFuncs ((Func _ _), (Func _ _)) = True
 twoFuncs _ = False
+
+isIdentity :: TypeConstraint -> Bool
+isIdentity (t1, t2) = t1 == t2
 
 {-}
 type Sub = [(Type, Type)]

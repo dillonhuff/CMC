@@ -72,7 +72,7 @@ multiplyTwoGen = (binaryOp (operator "*") (identifier "A") (identifier "C"), gen
 
 transposeMultExpr =
 	(binaryOp (operator "*") (unaryOp (operator "'") (identifier "A")) (identifier "K"),
-		genMatrix "A-cols" "K-cols")
+		genMatrix "A-col" "K-col")
 
 noArgFunc = ("func oh() A = [1 2; 1.0 2.3e4]; return(A)", [(identifier "A", defMatrix 2 2)])
 
@@ -103,9 +103,9 @@ transposeFunc = ("func tp(A) G = A'; return(G)",
 	,(identifier "A", genMatrix "A-row" "A-col")])
 
 transposeMultDef = ("func tpMul() Top = [1 2; 2 3; 4 5]' * [1 2; 2 3; 3 4]; return(Top)",
-	[(identifier "Top", defMatrix 2 3)])
+	[(identifier "Top", defMatrix 2 2)])
 
 transposeMult = ("func tpMul(A, B) Res = A' * B; return(Res)",
-	[(identifier "Res", genMatrix "B-row" "B-col")
-	,(identifier "A", genMatrix "B-row" "A-row")
+	[(identifier "Res", genMatrix "A-col" "B-col")
+	,(identifier "A", genMatrix "B-row" "A-col")
 	,(identifier "B", genMatrix "B-row" "B-col")])

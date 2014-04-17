@@ -11,10 +11,11 @@ typeSystemTests = do
 -- Tests where the input constraints have a solution
 typeSystemCorrectTests = do
 	testFunction (extractValue . computeType) correctlyTypedCases
-	--testFunction (uniqueTypeNames "t-0") typeNameCases
+	testFunction (uniqueTypeNames "t-0") typeNameCases
 
 correctlyTypedCases =
-	[scalar
+	[identicalDims
+	,scalar
 	,reverseVar
 	,genAndDefMatrix
 	,twoGenMatrices
@@ -34,6 +35,8 @@ typeNameCases =
 	,funcType
 	,matrixType
 	,nestedFuncMatrix]
+
+identicalDims = ([(dimension 1, dimension 1), (defMatrix 1 4, typeVar "t-0")], defMatrix 1 4)
 
 scalar = ([(typeVar "t-0", defMatrix 2 1)], defMatrix 2 1)
 

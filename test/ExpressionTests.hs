@@ -9,7 +9,8 @@ import TypeSystem
 
 expressionTests = do
 	testFunction (extractValue . (typeOfExpr [])) exprTypeCases
-	testFunction (extractValue . ((=<<) checkFunctionTypes) . parseFunction) functionTypeCases
+	testFunction (extractValue . typeOfExpr testVars) exprWithVarsCases
+	--testFunction (extractValue . ((=<<) checkFunctionTypes) . parseFunction) functionTypeCases
 
 exprTypeCases =
 	[oneMatrix
@@ -21,8 +22,16 @@ exprTypeCases =
 	,timesOp
 	,scalarTimesOp]
 
-functionTypeCases =
-	[noArgFunction]
+testVars =
+	[(identifier "A", genMatrix "A-row" "A-col")
+	,(identifier "B", defMatrix 1 2)
+	,(identifier "C", genMatrix "C-row" "C-col")]
+
+exprWithVarsCases =
+	[oneId
+	,oneIdDefDimensions
+	,addTwo
+	,multiplyTwoGen]
 
 oneMatrix = ((matrix 2 4 [1, 2, 3, 4, 5, 6, 7, 8]), defMatrix 2 4)
 
@@ -40,4 +49,10 @@ timesOp = (binaryOp (operator "*") (matrix 38 29 []) (matrix 29 256 []), defMatr
 
 scalarTimesOp = (binaryOp (operator ".*") (matrix 1 1 [3.4]) (matrix 6 71 []), defMatrix 6 71)
 
-noArgFunction = ("func ohNo() X = [1.2]; return(X)", [defMatrix 1 1])
+oneId = (identifier "A", genMatrix "A-row" "A-col")
+
+addTwo = (binaryOp (operator "+") (identifier "A") (identifier "B"), defMatrix 1 2)
+
+oneIdDefDimensions = (identifier "B", defMatrix 1 2)
+
+multiplyTwoGen = (binaryOp (operator "*") (identifier "A") (identifier "C"), genMatrix "A-row" "C-col")

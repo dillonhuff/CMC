@@ -80,6 +80,9 @@ builtins =
 -- TODO: find more elegant way to deal with unary vs. binary '-'
 getExprConstraints :: [(Expression, Type)] -> String -> Expression -> [TypeConstraint]
 getExprConstraints _ tv (Matrix r c _) = [(typeVar tv, defMatrix r c)]
+getExprConstraints context tv i@(Identifier _) = case lookup i context of
+	Just t -> [(typeVar tv, t)]
+	Nothing -> error $ "No such var as " ++ show i
 getExprConstraints context tv (UnaryOp op arg) =
 	[(opType, func argType resType)] ++ argConstraints
 	where

@@ -1,8 +1,9 @@
 module TypeSystem(
 	Type, computeType, TypeConstraint, typeConstraint,
 	typeVar, defMatrix, genMatrix, doSub, flipSub, unify,
-	leftDefMatrix, rightDefMatrix, func) where
+	leftDefMatrix, rightDefMatrix, func, uniqueTypeNames) where
 
+import Data.Char
 import Data.List
 import ErrorHandling
 
@@ -15,6 +16,36 @@ data Type
 
 instance Show Type where
 	show = showType
+
+isDefTypeVar :: Type -> Bool
+isDefTypeVar (TypeVar name) = isUpper (head name)
+isDefTypeVar _ = False
+
+-- Iterate over type giving unique names to TypeVars based on input string
+uniqueTypeNames :: String -> Type -> Type
+uniqueTypeNames pref t = rename (assignNames [] pref t) t
+
+rename :: [(String, String)] -> Type -> Type
+rename name (Func t1 t2) = Func (rename name t1) (rename name t2)
+rename name (Matrix t1 t2) = Matrix (rename name t1) (rename name t2)
+rename names (TypeVar name) = case lookup name names of
+	Just n -> (TypeVar n)
+	Nothing -> error $ show name ++ " has no unique name"
+rename _ t = t
+
+assignNames already pref (Func t1 t2) = names
+	where
+		nextNames = assignNames already (pref ++ "1") t1
+		names = assignNames nextNames (pref ++ "2") t2
+assignNames already pref (Matrix t1 t2) = names
+	where
+		nextNames = assignNames already (pref ++ "1") t1
+		names = assignNames nextNames (pref ++ "2") t2
+assignNames already pref (TypeVar name) = case lookup name already of
+	Just uniqueName -> already
+	Nothing -> ((name, pref ++ "-" ++ name):already)
+assignNames _ _ t = []
+
 
 isMatrix :: Type -> Bool
 isMatrix (Matrix _ _) = True
@@ -85,13 +116,17 @@ matSubToDimSubs (Matrix r1 c1, Matrix r2 c2) = [(r1, r2), (c1, c2)]
 
 nextSub :: (Type, Type) -> Sub
 nextSub (TypeVar n, t) = if not (elem (TypeVar n) (var t))
-	then [(TypeVar n, t)]
+	then if not (isDefTypeVar (TypeVar n))
+		then [(TypeVar n, t)]
+		else []
 	else []
-nextSub (Matrix v1 v2, Matrix v3 v4) = [(Matrix v1 v2, Matrix v3 v4)]
+nextSub (Matrix v1 v2, Matrix v3 v4) = []
 nextSub _ = []
 
 nextTerms :: (Type, Type) -> [(Type, Type)]
-nextTerms (TypeVar _, TypeVar _) = []
+nextTerms (TypeVar n, TypeVar m) = if isDefTypeVar (TypeVar n)
+	then [(TypeVar m, TypeVar n)]
+	else []
 nextTerms (Dimension n, Dimension m) = if n == m
 	then []
 	else error $ "Dimensions " ++ show n ++ " and " ++ show m ++ " don't match"
@@ -104,4 +139,6 @@ nextTerms (s, t) = if (not $ isTypeVar s) && (not $ isTypeVar t)
 
 var :: Type -> [Type]
 var t@(TypeVar _) = [t]
+var (Matrix t1 t2) = (var t1) ++ (var t2)
+var (Func t1 t2) = (var t1) ++ (var t2)
 var _ = []

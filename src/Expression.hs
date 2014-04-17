@@ -64,6 +64,7 @@ makeInputVars ids = zip ids (map idType ids)
 	where
 		idType (Identifier name) = genMatrix (name ++ "-row") (name ++ "-col")
 
+-- TODO find better replacement for all of these liftM function calls
 nextExprTypes :: [(Expression, Type)] -> Expression -> Error [(Expression, Type)]
 nextExprTypes curIds (Assign (Identifier name) expr) = nextTypes
 	where
@@ -115,7 +116,7 @@ getExprConstraints context tv (UnaryOp op arg) =
 	where
 		opType = case lookup (toUnaryForm op) context of
 			Nothing -> error $ show op ++ " is not an operator"
-			Just t -> t
+			Just t -> uniqueTypeNames (tv ++ "-p") t
 		argType = typeVar (tv ++ "0")
 		resType = typeVar tv
 		argConstraints = getExprConstraints context (tv ++ "0") arg
@@ -124,7 +125,7 @@ getExprConstraints context tv (BinaryOp op arg1 arg2) =
 	where
 		opType = case lookup op context of
 			Nothing -> error $ show op ++ " is not an operator"
-			Just t -> t
+			Just t -> uniqueTypeNames (tv ++ "-p") t
 		resType = typeVar tv
 		arg1Type = typeVar (tv ++ "1")
 		arg2Type = typeVar (tv ++ "2")

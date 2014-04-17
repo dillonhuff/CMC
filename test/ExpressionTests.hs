@@ -12,6 +12,7 @@ expressionTests = do
 	testFunction (extractValue . (liftM fst) . (typeOfExpr [])) exprTypeCases
 	testFunction (extractValue . (liftM fst) . typeOfExpr testVars) exprWithVarsCases
 	testFunction (extractValue . ((=<<) checkFunctionTypes) . parseFunction) functionTypeCases
+	testFunction (extractValue . (liftM makeDataFlowGraph) . parseFunction) dataFlowTestCases
 
 exprTypeCases =
 	[oneMatrix
@@ -45,6 +46,9 @@ functionTypeCases =
 	,transposeFunc
 	,transposeMult
 	,transposeMultDef]
+
+dataFlowTestCases =
+	[]
 
 oneMatrix = ((matrix 2 4 [1, 2, 3, 4, 5, 6, 7, 8]), defMatrix 2 4)
 

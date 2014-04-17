@@ -3,10 +3,12 @@ module Expression(
 	assign, operator, funcall,
 	unaryOp, binaryOp, function,
 	float, matrix, identifier,
-	typeOfExpr, checkFunctionTypes) where
+	typeOfExpr, checkFunctionTypes,
+	makeDataFlowGraph) where
 
 import Control.Monad
 import Data.Tuple
+import DataFlowGraph
 import ErrorHandling
 import TypeSystem
 
@@ -70,7 +72,7 @@ nextExprTypes curIds (Assign (Identifier name) expr) = nextTypes
 	where
 		exprTypeAndConstraints = typeOfExpr curIds expr
 		newIdType = liftM fst exprTypeAndConstraints
-		newId = liftM swap $ errorTuple newIdType (Identifier name) 
+		newId = liftM swap $ errorTuple newIdType (Identifier name)
 		newTypeConstrs = liftM snd exprTypeAndConstraints
 		updatedIds = liftM (updateIds curIds) newTypeConstrs
 		nextTypes = liftM2 (:) newId updatedIds
@@ -135,3 +137,7 @@ getExprConstraints context tv (BinaryOp op arg1 arg2) =
 toUnaryForm :: Expression -> Expression
 toUnaryForm (Op "-") = (Op "unary--")
 toUnaryForm n = n
+
+-- Functions for conversion of expression tree into dataflow graph
+makeDataFlowGraph :: Function -> DataFlowGraph
+makeDataFlowGraph f = emptyDataFlowGraph

@@ -1,6 +1,6 @@
 module TypeSystem(
 	Type, computeType, TypeConstraint, typeConstraint,
-	typeVar, defMatrix, genMatrix, doSub, flipSub, unify,
+	typeVar, defMatrix, genMatrix, unify,
 	leftDefMatrix, rightDefMatrix, func, uniqueTypeNames) where
 
 import Data.Char
@@ -86,10 +86,69 @@ typeConstraint :: Type -> Type -> TypeConstraint
 typeConstraint t1 t2 = (t1, t2)
 
 computeType :: [TypeConstraint] -> Error Type
-computeType constraints = Succeeded $ doSub unifyingSubs (TypeVar "t-0")
+computeType constraints = Succeeded $ applySubstitutions unifyingSubs (TypeVar "t-0") --Succeeded $ doSub unifyingSubs (TypeVar "t-0")
 	where
 		unifyingSubs = unify constraints
 
+unify :: [TypeConstraint] -> [TypeConstraint]
+unify [] = []
+unify (t:rest)
+	| nonDefVarSub t		= (t:(unify (map (subTC t) rest)))
+	| defVarNonVar t 		= (t:(unify (map (subTC t) rest)))
+	| nonVarAndVar t 		= unify ((flipTC t):rest)
+	| twoMatrices t 		= unify $ (matrixDimSubs t) ++ rest
+	| twoFuncs t 			= unify $ (funcSubs t) ++ rest
+	| otherwise 			= error $ "no sub for " ++ show (t:rest)
+
+matrixDimSubs :: TypeConstraint -> [TypeConstraint]
+matrixDimSubs ((Matrix r1 c1), (Matrix r2 c2)) = [(r1, r2), (c1, c2)]
+
+funcSubs :: TypeConstraint -> [TypeConstraint]
+funcSubs ((Func a1 a2), (Func a3 a4)) = [(a1, a3), (a2, a4)]
+
+applySubstitutions :: [TypeConstraint] -> Type -> Type
+applySubstitutions [] t = t
+applySubstitutions s t = case lookup t s of
+	Just subForT -> applySubstitutions (delete (t, subForT) s) subForT
+	Nothing -> continueSubList s t
+
+continueSubList s (Matrix d1 d2) = Matrix (applySubstitutions s d1) (applySubstitutions s d2)
+continueSubList s (Func t1 t2) = Func (applySubstitutions s t1) (applySubstitutions s t2)
+continueSubList _ t = t
+
+flipTC :: TypeConstraint -> TypeConstraint
+flipTC (a, b) = (b, a)
+
+subTC :: TypeConstraint -> TypeConstraint -> TypeConstraint
+subTC s (t1, t2) = (sub s t1, sub s t2)
+
+sub :: (Type, Type) -> Type -> Type
+sub (t1, t2) other = if other == t1
+	then t2
+	else continueSub (t1, t2) other
+
+continueSub s (Matrix d1 d2) = Matrix (sub s d1) (sub s d2)
+continueSub s (Func t1 t2) = Func (sub s t1) (sub s t2)
+continueSub _ t = t
+
+nonDefVarSub :: TypeConstraint -> Bool
+nonDefVarSub (t, _) = (not $ isDefTypeVar t) && (isTypeVar t)
+
+defVarNonVar :: TypeConstraint -> Bool
+defVarNonVar (t, k) = (isDefTypeVar t) && ((isDefTypeVar k) || (not $ isTypeVar k))
+
+nonVarAndVar :: TypeConstraint -> Bool
+nonVarAndVar (front, back) = (not $ isTypeVar front) && (isTypeVar back)
+
+twoMatrices :: TypeConstraint -> Bool
+twoMatrices ((Matrix _ _), (Matrix _ _)) = True
+twoMatrices _ = False
+
+twoFuncs :: TypeConstraint -> Bool
+twoFuncs ((Func _ _), (Func _ _)) = True
+twoFuncs _ = False
+
+{-}
 type Sub = [(Type, Type)]
 
 flipSub :: Sub -> Sub
@@ -106,6 +165,7 @@ doSubList s pairs = map (\(x, y) -> (doSub s x, doSub s y)) pairs
 
 doSub :: Sub -> Type -> Type
 doSub s m@(Matrix r c) = Matrix (doSub s r) (doSub s c)
+doSub s (Func t1 t2) = Func (doSub s t1) (doSub s t2)
 doSub s t@(TypeVar _) = case lookup t s of
 	Just subsT -> doSub (delete (t, subsT) s) subsT
 	Nothing -> t
@@ -141,4 +201,4 @@ var :: Type -> [Type]
 var t@(TypeVar _) = [t]
 var (Matrix t1 t2) = (var t1) ++ (var t2)
 var (Func t1 t2) = (var t1) ++ (var t2)
-var _ = []
+var _ = []-}

@@ -11,11 +11,13 @@ typeSystemTests = do
 -- Tests where the input constraints have a solution
 typeSystemCorrectTests = do
 	testFunction (extractValue . computeType) correctlyTypedCases
-	testFunction (uniqueTypeNames "t-0") typeNameCases
+	--testFunction (uniqueTypeNames "t-0") typeNameCases
 
 correctlyTypedCases =
 	[scalar
 	,reverseVar
+	,genAndDefMatrix
+	,twoGenMatrices
 	,reverseGenMat
 	,matSubBothVars
 	,unaryOp
@@ -36,6 +38,10 @@ typeNameCases =
 scalar = ([(typeVar "t-0", defMatrix 2 1)], defMatrix 2 1)
 
 reverseVar = ([(defMatrix 12 23, typeVar "t-0")], defMatrix 12 23)
+
+genAndDefMatrix = ([(defMatrix 1 6, genMatrix "A" "B"), (genMatrix "A" "B", typeVar "t-0")], defMatrix 1 6)
+
+twoGenMatrices = ([(genMatrix "A" "B", genMatrix "Q" "C"), (genMatrix "A" "B", typeVar "t-0")], genMatrix "Q" "C")
 
 reverseGenMat = ([(genMatrix "b" "c", genMatrix "B-row" "B-col"), (genMatrix "a" "c", typeVar "t-0")],
 	genMatrix "a" "B-col")
@@ -59,9 +65,9 @@ transMulC1C4 = ([c1, c4], genMatrix "a" "B-col")
 
 transMulC4C1 = ([c4, c1], genMatrix "a" "B-col")
 
-transMulDiffOrder = ([c4, c3, c2, c1], genMatrix "A-row" "B-col")
+transMulDiffOrder = ([c4, c3, c2, c1], genMatrix "A-col" "B-col")
 
-transMultiply = ([c1, c2, c3, c4], genMatrix "A-row" "B-col")
+transMultiply = ([c1, c2, c3, c4], genMatrix "A-col" "B-col")
 
 unaryOp = ([(func (genMatrix "a" "b") (genMatrix "a" "b"),
 				(func (typeVar "t-00") (typeVar "t-0"))),

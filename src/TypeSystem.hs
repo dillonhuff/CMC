@@ -1,6 +1,6 @@
 module TypeSystem(
 	Type, computeType, TypeConstraint, typeConstraint,
-	typeVar, defMatrix, genMatrix, doSub,
+	typeVar, defMatrix, genMatrix, doSub, flipSub, unify,
 	leftDefMatrix, rightDefMatrix, func) where
 
 import Data.List
@@ -60,6 +60,9 @@ computeType constraints = Succeeded $ doSub unifyingSubs (TypeVar "t-0")
 		unifyingSubs = unify constraints
 
 type Sub = [(Type, Type)]
+
+flipSub :: Sub -> Sub
+flipSub sub = map (\(x, y) -> (y, x)) sub
 
 unify :: [(Type, Type)] -> Sub
 unify [] = []

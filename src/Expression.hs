@@ -80,7 +80,8 @@ updateIds oldIds newConstraints = newIds
 	where
 		idNames = map fst oldIds
 		idTypes = map snd oldIds
-		newIds = zip idNames (map (doSub newConstraints) idTypes)
+		unifyingSub = unify newConstraints
+		newIds = zip idNames (map (doSub unifyingSub) idTypes)
 
 valTypes :: [(Expression, Type)] -> [Expression] -> Error [(Expression, Type)]
 valTypes _ _ = Succeeded []

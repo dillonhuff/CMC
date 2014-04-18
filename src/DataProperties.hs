@@ -1,5 +1,6 @@
 module DataProperties(
-	Shape, genNum, scalar, makeShape) where
+	Shape, genNum, scalar, makeShape,
+	defColVec, defRowVec, dimsToShape) where
 
 import TypeSystem
 
@@ -15,6 +16,12 @@ data Shape
 	| Symmetric Dimension
 	| General Dimension Dimension
 	deriving (Eq, Show)
+
+dimsToShape :: Int -> Int -> Shape
+dimsToShape 1 1 = Scalar
+dimsToShape r 1 = ColVector (NumberDim r)
+dimsToShape 1 r	= RowVector (NumberDim r)
+dimsToShape r c = General (NumberDim r) (NumberDim c)
 
 shapeNames =
 	["UpperTriangular", "LowerTriangular"
@@ -32,4 +39,6 @@ data Dimension
 	deriving (Eq, Show)
 
 scalar = Scalar
+defColVec d = ColVector (NumberDim d)
+defRowVec d = RowVector (NumberDim d)
 genNum r c = General (NumberDim r) (NumberDim c)

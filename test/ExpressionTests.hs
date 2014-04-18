@@ -60,7 +60,10 @@ functionTypeCases =
 	,twoScalarTimes]
 
 funcAnnotationCases =
-	[oneScalarArg]
+	[oneScalarArg
+	,noArgColVec
+	,noArgRowVec
+	,noArgScalar]
 
 oneMatrix = ((matrix 2 4 [1, 2, 3, 4, 5, 6, 7, 8]), defMatrix 2 4)
 
@@ -165,3 +168,21 @@ oneScalarArg = ("func oneScalar([Scalar] P) X = P; return(X)",
 		"oneScalar"
 		[aBinop "=" (aId "X" scalar) (aId "P" scalar) scalar]
 		[aId "X" scalar])
+
+noArgColVec = ("func oneMat() L = [1.2; 3.4]; return(L)",
+	annotatedFunction
+		"oneMat"
+		[aBinop "=" (aId "L" (defColVec 2)) (aMat [1.2, 3.4] (defColVec 2)) (defColVec 2)]
+		[aId "L" (defColVec 2)])
+
+noArgRowVec = ("func oneMat() L = [1.2 3.4]; return(L)",
+	annotatedFunction
+		"oneMat"
+		[aBinop "=" (aId "L" (defRowVec 2)) (aMat [1.2, 3.4] (defRowVec 2)) (defRowVec 2)]
+		[aId "L" (defRowVec 2)])
+
+noArgScalar = ("func oneMat() L = [-1.2e-3]; return(L)",
+	annotatedFunction
+		"oneMat"
+		[aBinop "=" (aId "L" scalar) (aMat [-1.2e-3] scalar) scalar]
+		[aId "L" scalar])

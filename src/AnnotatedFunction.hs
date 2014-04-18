@@ -1,5 +1,5 @@
 module AnnotatedFunction(
-	AnnotatedFunction, AExpr, aId, aBinop, aUnop,
+	AnnotatedFunction, AExpr, aId, aBinop, aUnop, aMat,
 	shapeOf, getIdShape, nameOf,
 	annotatedFunction) where
 
@@ -12,14 +12,14 @@ data AnnotatedFunction = AF String [AExpr] [AExpr]
 	deriving (Eq, Show)
 
 data AExpr
-	= AMat Shape
+	= AMat [Float] Shape
 	| AIdent String Shape
 	| ABinop String AExpr AExpr Shape
 	| AUnop String AExpr Shape
 	deriving (Eq, Show)
 
 shapeOf :: AExpr -> Shape
-shapeOf (AMat s) = s
+shapeOf (AMat _ s) = s
 shapeOf (AIdent _ s) = s
 shapeOf (ABinop _ _ _ s) = s
 shapeOf (AUnop _ _ s) = s
@@ -37,6 +37,7 @@ getIdShape n (AIdent idName s:rest) = if n == idName
 	then Just s
 	else getIdShape n rest
 
+aMat vals shape = AMat vals shape
 aId name shape = AIdent name shape
 aBinop name arg1 arg2 shape = ABinop name arg1 arg2 shape
 aUnop name arg shape = AUnop name arg shape

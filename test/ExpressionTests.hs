@@ -1,7 +1,9 @@
 module ExpressionTests(
 	expressionTests) where
 
+import AnnotatedFunction
 import Control.Monad
+import DataProperties
 import ErrorHandling
 import Expression
 import Parser
@@ -12,6 +14,9 @@ expressionTests = do
 	testFunction (extractValue . (liftM fst) . (typeOfExpr [])) exprTypeCases
 	testFunction (extractValue . (liftM fst) . typeOfExpr testVars) exprWithVarsCases
 	testFunction (extractValue . ((=<<) checkFunctionTypes) . parseFunction) functionTypeCases
+	testFunction strToExprTrees funcAnnotationCases
+
+strToExprTrees = (extractValue . ((=<<) annotateFunc) . parseFunction)
 
 exprTypeCases =
 	[oneMatrix
@@ -53,6 +58,9 @@ functionTypeCases =
 	,simpleColVector
 	,transposeColVector
 	,twoScalarTimes]
+
+funcAnnotationCases =
+	[oneScalarArg]
 
 oneMatrix = ((matrix 2 4 [1, 2, 3, 4, 5, 6, 7, 8]), defMatrix 2 4)
 
@@ -151,3 +159,9 @@ twoScalarTimes = ("func tsa([Scalar] G, X, [Scalar] Y) K = G * Y; return(K)",
 	,(identifier "G", defMatrix 1 1)
 	,(identifier "X", genMatrix "X-row" "X-col")
 	,(identifier "Y", defMatrix 1 1)])
+
+oneScalarArg = ("func oneScalar([Scalar] P) X = P; return(X)",
+	annotatedFunction
+		"oneScalar"
+		[aBinop "=" (aId "X" scalar) (aId "P" scalar) scalar]
+		[aId "X" scalar])

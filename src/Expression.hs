@@ -2,14 +2,14 @@ module Expression(
 	Expression, Function,
 	assign, operator, funcall,
 	unaryOp, binaryOp, function,
-	functionSpec,
-	float, matrix, identifier,
-	typeOfExpr, checkFunctionTypes,
-	makeDataFlowGraph) where
+	functionSpec, annotatedFunction,
+	float, matrix, identifier, annotateFunc,
+	typeOfExpr, checkFunctionTypes) where
 
+import AnnotatedFunction
 import Control.Monad
 import Data.Tuple
-import DataFlowGraph
+import DataProperties
 import ErrorHandling
 import TypeSystem
 
@@ -160,6 +160,48 @@ toUnaryForm :: Expression -> Expression
 toUnaryForm (Op "-") = (Op "unary--")
 toUnaryForm n = n
 
--- Functions for conversion of expression tree into dataflow graph
-makeDataFlowGraph :: Function -> Error DataFlowGraph
-makeDataFlowGraph (FC name specialProps args body returnVals) = Succeeded $ emptyDataFlowGraph
+-- Code for converting the primitive function description output
+-- by the parser to a function description that includes
+-- information about special properties of results
+-- computed by the function given to the compiler
+
+annotateFunc :: Function -> Error AnnotatedFunction
+annotateFunc f@(FC (Funcall name) specProps args body returnVals) =
+	case anBody of
+		Failed errMsg -> Failed errMsg
+		Succeeded annotatedBody -> Succeeded $ annotatedFunction 
+			name (snd annotatedBody) (anRVs returnVals (fst annotatedBody))
+	where
+		idTypes = checkFunctionTypes f
+		argTypes = liftM (filter (\(ident, _) -> elem ident args)) idTypes
+		anIds = liftM (annotatedIds specProps) argTypes
+		anBody = liftM (annotateBody body) anIds
+
+anRVs :: [Expression] -> [AExpr] -> [AExpr]
+anRVs ids anIds = filter (\i -> elem (nameOf i) idNames) anIds
+	where
+		idNames = map (\(Identifier n) -> n) ids
+
+annotateBody :: [Expression] -> [AExpr] -> ([AExpr], [AExpr])
+annotateBody body initialIds = foldl annotateAssign (initialIds, []) body
+
+annotateAssign :: ([AExpr], [AExpr]) -> Expression -> ([AExpr], [AExpr])
+annotateAssign (ids, assigns) (Assign (Identifier name) arg) = (anIdent:ids, anAssign:assigns)
+	where
+		anArg = annotateExpr ids arg
+		anIdent = aId name (shapeOf anArg)
+		anAssign = aBinop "=" anIdent anArg (shapeOf anArg)
+
+annotateExpr :: [AExpr] -> Expression -> AExpr
+annotateExpr ids (Identifier n) = case getIdShape n ids of
+	Just shape -> aId n shape
+	Nothing -> error $ "The impossible happened: After type checking " ++ n ++ " has no shape\n" ++ show ids
+
+annotatedIds :: [[Expression]] -> [(Expression, Type)] -> [AExpr]
+annotatedIds props idTypePairs = annotatedIdentifiers
+	where
+		idNames = map (\((Identifier n), _) -> n) idTypePairs
+		idTypes = map (\(_, t) -> t) idTypePairs
+		shapeNames = map (map (\(Identifier n) -> n)) props
+		idShapes = zipWith makeShape shapeNames idTypes
+		annotatedIdentifiers = zipWith aId idNames idShapes

@@ -61,13 +61,30 @@ float val = Matrix 1 1 [val]
 checkFunctionTypes :: Function -> Error [(Expression, Type)]
 checkFunctionTypes (FC name shapes args body returnVals) = outputTypes
 	where
-		inputTypes = makeInputVars args
+		inputTypes = makeInputVars shapes args
 		outputTypes = foldM nextExprTypes inputTypes body
 
-makeInputVars :: [Expression] -> [(Expression, Type)]
-makeInputVars ids = zip ids (map idType ids)
+makeInputVars :: [[Expression]] -> [Expression] -> [(Expression, Type)]
+makeInputVars props ids = zip ids (map idType properties)
 	where
-		idType (Identifier name) = genMatrix (name ++ "-row") (name ++ "-col")
+		properties = zip props ids
+
+idType :: ([Expression], Expression) -> Type
+idType (props, matName@(Identifier name)) = if (length props) > 1
+	then error $ show matName ++ " has more than 1 shape" -- As more properties are added this will be changed
+	else if length props == 0
+		then genMatrix (name ++ "-row") (name ++ "-col")
+		else specialMatrixDims (head props) matName
+
+specialMatrixDims :: Expression -> Expression -> Type
+specialMatrixDims (Identifier shapeName) (Identifier idName) =
+	case shapeName of
+		"RowVector" -> leftDefMatrix 1 (idName ++ "-col")
+		"ColumnVector" -> rightDefMatrix (idName ++ "-row") 1
+		"UpperTriangular" -> genMatrix (idName ++ "-row") (idName ++ "-row")
+		"LowerTriangular" -> genMatrix (idName ++ "-row") (idName ++ "-row")
+		"Symmetric" -> genMatrix (idName ++ "-row") (idName ++ "-row")
+		_ -> error $ shapeName ++ " is not a valid matrix shape"
 
 -- TODO find better replacement for all of these liftM function calls
 nextExprTypes :: [(Expression, Type)] -> Expression -> Error [(Expression, Type)]

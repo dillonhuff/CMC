@@ -2,7 +2,6 @@ module ExpressionTests(
 	expressionTests) where
 
 import Control.Monad
-import DataFlowGraph
 import ErrorHandling
 import Expression
 import Parser
@@ -13,9 +12,6 @@ expressionTests = do
 	testFunction (extractValue . (liftM fst) . (typeOfExpr [])) exprTypeCases
 	testFunction (extractValue . (liftM fst) . typeOfExpr testVars) exprWithVarsCases
 	testFunction (extractValue . ((=<<) checkFunctionTypes) . parseFunction) functionTypeCases
-	testFunction correctSizeGraph dataFlowTestCases
-
-correctSizeGraph = extractValue . liftM numNodes . (((=<<) makeDataFlowGraph) . parseFunction)
 
 exprTypeCases =
 	[oneMatrix
@@ -48,10 +44,14 @@ functionTypeCases =
 	,multipleStatements
 	,transposeFunc
 	,transposeMult
-	,transposeMultDef]
-
-dataFlowTestCases =
-	[noArguments]
+	,transposeMultDef
+	,simpleWithUpperTriangular
+	,simpleWithLowerTriangular
+	,simpleWithSymmetric
+	,simpleWithRowVector
+	,transposeRowVector
+	,simpleColVector
+	,transposeColVector]
 
 oneMatrix = ((matrix 2 4 [1, 2, 3, 4, 5, 6, 7, 8]), defMatrix 2 4)
 
@@ -117,4 +117,30 @@ transposeMult = ("func tpMul(A, B) Res = A' * B; return(Res)",
 	,(identifier "A", genMatrix "B-row" "A-col")
 	,(identifier "B", genMatrix "B-row" "B-col")])
 
-noArguments = ("func otr() G = [1 2; 3 4]; return(G)", 2)
+simpleWithUpperTriangular = ("func spec([UpperTriangular] G) X = G; return(X)",
+	[(identifier "X", genMatrix "G-row" "G-row")
+	,(identifier "G", genMatrix "G-row" "G-row")])
+
+simpleWithLowerTriangular = ("func spec([LowerTriangular] G) X = G; return(X)",
+	[(identifier "X", genMatrix "G-row" "G-row")
+	,(identifier "G", genMatrix "G-row" "G-row")])
+
+simpleWithSymmetric = ("func spec([Symmetric] G) X = G'; return(X)",
+	[(identifier "X", genMatrix "G-row" "G-row")
+	,(identifier "G", genMatrix "G-row" "G-row")])
+
+simpleWithRowVector = ("func rv([RowVector] X) Ju = X; return(Ju)",
+	[(identifier "Ju", leftDefMatrix 1 "X-col")
+	,(identifier "X", leftDefMatrix 1 "X-col")])
+
+transposeRowVector = ("func rv([RowVector] X) Ju = X'; return(Ju)",
+	[(identifier "Ju", rightDefMatrix "X-col" 1)
+	,(identifier "X", leftDefMatrix 1 "X-col")])
+
+simpleColVector = ("func rv([ColumnVector] L) Ju = L; return(Ju)",
+	[(identifier "Ju", rightDefMatrix "L-row" 1)
+	,(identifier "L", rightDefMatrix "L-row" 1)])
+
+transposeColVector = ("func rv([ColumnVector] L) Ju = L'; return(Ju)",
+	[(identifier "Ju", leftDefMatrix 1 "L-row")
+	,(identifier "L", rightDefMatrix "L-row" 1)])

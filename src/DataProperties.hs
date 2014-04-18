@@ -9,7 +9,7 @@ data Shape
 	| ColVector Dimension
 	| UpperTriangular Dimension
 	| LowerTriangular Dimension
-	| Symmetric Dimension Dimension
+	| Symmetric Dimension
 	| General Dimension Dimension
 	deriving (Eq, Show)
 

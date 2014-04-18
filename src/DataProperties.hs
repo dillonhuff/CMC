@@ -86,7 +86,16 @@ shapeNames =
 -- Takes a list of names of properties and a type and returns
 -- the matching shape
 makeShape :: [String] -> Type -> Shape
-makeShape propNames t = Scalar
+makeShape propNames t = case getShapeName propNames of
+	"UpperTriangular" -> UpperTriangular (makeDimension $ rowDimension t)
+	_ -> scalar
+
+getShapeName propNames = head $ filter (\x -> elem x shapeNames) propNames
+
+makeDimension :: Type -> Dimension
+makeDimension t = if isTypeVar t
+	then GenericDim $ varName t
+	else NumberDim $ dimNum t
 
 data Dimension
 	= GenericDim String

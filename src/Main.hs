@@ -1,5 +1,6 @@
 module Main(main) where
 
+import Expression
 import Parser
 import System.Environment
 import System.IO
@@ -9,4 +10,4 @@ main = do
 	let fileName = head arguments
 	fileHandle <- openFile fileName ReadMode
 	contents <- hGetContents fileHandle
-	putStrLn $ show $ parseFunction contents
+	putStrLn $ show $ (parseFunction contents) >>= annotateFunc

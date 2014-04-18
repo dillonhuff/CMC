@@ -1,7 +1,8 @@
 module TypeSystem(
 	Type, computeType, TypeConstraint, typeConstraint, dimension,
 	typeVar, defMatrix, genMatrix, unify, applySubstitutions,
-	leftDefMatrix, rightDefMatrix, func, uniqueTypeNames) where
+	leftDefMatrix, rightDefMatrix, func, uniqueTypeNames, isTypeVar,
+	rowDimension, colDimension, varName, dimNum) where
 
 import Data.Char
 import Data.List
@@ -16,6 +17,12 @@ data Type
 
 instance Show Type where
 	show = showType
+
+rowDimension (Matrix t1 t2) = t1
+colDimension (Matrix t1 t2) = t2
+
+varName (TypeVar t) = t
+dimNum (Dimension d) = d
 
 isDefTypeVar :: Type -> Bool
 isDefTypeVar (TypeVar name) = isUpper (head name)

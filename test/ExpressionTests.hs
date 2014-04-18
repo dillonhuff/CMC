@@ -63,7 +63,8 @@ funcAnnotationCases =
 	[oneScalarArg
 	,noArgColVec
 	,noArgRowVec
-	,noArgScalar]
+	,noArgScalar
+	,unaryOpUpperTriangular]
 
 oneMatrix = ((matrix 2 4 [1, 2, 3, 4, 5, 6, 7, 8]), defMatrix 2 4)
 
@@ -186,3 +187,13 @@ noArgScalar = ("func oneMat() L = [-1.2e-3]; return(L)",
 		"oneMat"
 		[aBinop "=" (aId "L" scalar) (aMat [-1.2e-3] scalar) scalar]
 		[aId "L" scalar])
+
+unaryOpUpperTriangular = ("func upT([UpperTriangular] T) X = T'; return(X)",
+	annotatedFunction
+		"upT"
+		[aBinop
+			"="
+			(aId "X" (genLowerTriangular "T-row"))
+			(aUnop "'" (aId "T" (genUpperTriangular "T-row")) (genLowerTriangular "T-row"))
+			(genLowerTriangular ("T-row"))]
+		[aId "X" (genLowerTriangular "T-row")])

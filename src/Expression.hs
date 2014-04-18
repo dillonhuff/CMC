@@ -194,6 +194,9 @@ annotateAssign (ids, assigns) (Assign (Identifier name) arg) = (anIdent:ids, anA
 
 annotateExpr :: [AExpr] -> Expression -> AExpr
 annotateExpr _ (Matrix r c vals) = aMat vals (dimsToShape r c)
+annotateExpr ids (UnaryOp (Op name) arg) = aUnop name anArg (unopResultShape name (shapeOf anArg))
+	where
+		anArg = annotateExpr ids arg
 annotateExpr ids (Identifier n) = case getIdShape n ids of
 	Just shape -> aId n shape
 	Nothing -> error $ "The impossible happened: After type checking " ++ n ++ " has no shape\n" ++ show ids

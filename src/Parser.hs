@@ -24,6 +24,8 @@ parseAssigns toks = case parse (many1 pAssign) "Parser" toks of
 	Left err -> Failed $ show err
 	Right asg -> Succeeded asg
 
+
+
 -- TODO: Add checks to make sure the matrix isn't ragged
 makeMatrix :: [[Float]] -> Expression
 makeMatrix elements = matrix rows cols flatElems
@@ -35,11 +37,22 @@ makeMatrix elements = matrix rows cols flatElems
 pFunc = do
 	cmcTok funcTok
 	name <- pFuncId
-	args <- pArgList
+	args <- pFuncArgList
+	let argProps = map fst args
+	let argNames = map snd args
 	body <- many1 pAssign
 	cmcTok returnTok
 	retVals <- pArgList
-	return $ function name args body retVals
+	return $ functionSpec name argProps argNames body retVals
+
+pFuncArgList = pParens (sepBy pFuncArg (cmcTok commaTok))
+
+pFuncArg = do
+	props <- option [] pPropertiesList
+	name <- pIdentifier
+	return (props, name)
+
+pPropertiesList = pBrackets (sepBy pIdentifier (cmcTok commaTok))
 
 pArgList = pParens (sepBy pIdentifier (cmcTok commaTok))
 
@@ -87,6 +100,12 @@ term = pParens pExpr
 	<|> pIdentifier
 	<|> pScalar
 	<|> pMatrix
+
+pBrackets e = do
+	cmcTok lbracketTok
+	val <- e
+	cmcTok rbracketTok
+	return val
 
 pParens e = do
 	cmcTok lparenTok

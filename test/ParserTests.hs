@@ -26,7 +26,10 @@ parseCases =
 
 parseFuncCases =
 	[simpleFunc
-	,multiReturnFunc]
+	,multiReturnFunc
+	,specialShapeFunc
+	,multiArgShapesFunc
+	,noDefaultShapeForSomeArgs]
 
 scalarAssign = ("A = 4;", [assign (identifier "A") (float 4)])
 
@@ -106,3 +109,41 @@ multiReturnFunc = ("func ohNo12(C) C = [1 2; 3 4]; return(A, B, C)",
 		[identifier "C"]
 		[assign (identifier "C") (matrix 2 2 [1, 2, 3, 4])]
 		[identifier "A", identifier "B", identifier "C"])
+
+specialShapeFunc = ("func sp([UpperTriangular] A) X = A; return(X)",
+	functionSpec
+		(funcall "sp")
+		[[identifier "UpperTriangular"]]
+		[identifier "A"]
+		[assign (identifier "X") (identifier "A")]
+		[identifier "X"])
+
+multiArgShapesFunc =
+	("func nope([General] G, [Symmetric] M, [LowerTriangular] H) K = M + H; J = G'; return(K, J)",
+		functionSpec
+			(funcall "nope")
+			[[identifier "General"], [identifier "Symmetric"], [identifier "LowerTriangular"]]
+			[identifier "G", identifier "M", identifier "H"]
+			[assign (identifier "K")
+				(binaryOp
+					(operator "+")
+					(identifier "M")
+					(identifier "H"))
+			,assign (identifier "J")
+				(unaryOp
+					(operator "'")
+					(identifier "G"))]
+			[identifier "K", identifier "J"])
+
+noDefaultShapeForSomeArgs =
+	("func tre([Symmetric] U, H) X = U - H; return(X)",
+		functionSpec
+			(funcall "tre")
+			[[identifier "Symmetric"], []]
+			[identifier "U", identifier "H"]
+			[assign (identifier "X")
+				(binaryOp
+					(operator "-")
+					(identifier "U")
+					(identifier "H"))]
+			[identifier "X"])

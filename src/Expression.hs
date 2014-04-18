@@ -2,6 +2,7 @@ module Expression(
 	Expression, Function,
 	assign, operator, funcall,
 	unaryOp, binaryOp, function,
+	functionSpec,
 	float, matrix, identifier,
 	typeOfExpr, checkFunctionTypes,
 	makeDataFlowGraph) where
@@ -12,11 +13,13 @@ import DataFlowGraph
 import ErrorHandling
 import TypeSystem
 
-data Function = FC Expression [Expression] [Expression] [Expression] [Expression]
+data Function = FC Expression [[Expression]] [Expression] [Expression] [Expression]
 	deriving (Eq, Show)
 
 function :: Expression -> [Expression] -> [Expression] -> [Expression] -> Function
-function name args body returnVals = FC name [] args body returnVals
+function name args body returnVals = FC name (replicate (length args) ([] :: [Expression])) args body returnVals
+
+functionSpec name props args body returnVals = FC name props args body returnVals
 
 data Expression
 	= Identifier String
@@ -140,13 +143,4 @@ toUnaryForm n = n
 
 -- Functions for conversion of expression tree into dataflow graph
 makeDataFlowGraph :: Function -> Error DataFlowGraph
-makeDataFlowGraph (FC _ sizeIds args body returnVals) =
-	if allReturnValsAreComputed
-		then Succeeded $ makeGraph sizeIds initialVarTypes body
-		else Failed $ "Not all return values are computed in the function"
-	where
-		allReturnValsAreComputed = True
-		initialVarTypes = []
-
-makeGraph :: [Expression] -> [(Expression, Type)] -> [Expression] -> DataFlowGraph
-makeGraph sizeIds varTypes body = emptyDataFlowGraph
+makeDataFlowGraph (FC _ sizeIds args body returnVals) = Succeeded $ emptyDataFlowGraph

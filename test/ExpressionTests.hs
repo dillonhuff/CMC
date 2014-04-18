@@ -51,7 +51,8 @@ functionTypeCases =
 	,simpleWithRowVector
 	,transposeRowVector
 	,simpleColVector
-	,transposeColVector]
+	,transposeColVector
+	,twoScalarTimes]
 
 oneMatrix = ((matrix 2 4 [1, 2, 3, 4, 5, 6, 7, 8]), defMatrix 2 4)
 
@@ -144,3 +145,9 @@ simpleColVector = ("func rv([ColumnVector] L) Ju = L; return(Ju)",
 transposeColVector = ("func rv([ColumnVector] L) Ju = L'; return(Ju)",
 	[(identifier "Ju", leftDefMatrix 1 "L-row")
 	,(identifier "L", rightDefMatrix "L-row" 1)])
+
+twoScalarTimes = ("func tsa([Scalar] G, X, [Scalar] Y) K = G * Y; return(K)",
+	[(identifier "K", defMatrix 1 1)
+	,(identifier "G", defMatrix 1 1)
+	,(identifier "X", genMatrix "X-row" "X-col")
+	,(identifier "Y", defMatrix 1 1)])

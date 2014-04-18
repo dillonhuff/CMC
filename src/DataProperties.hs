@@ -5,7 +5,8 @@ module DataProperties(
 -- that matrices may have, like shape (vector, matrix, upper triangular...)
 
 data Shape
-	= RowVector Dimension
+	= Scalar Dimension
+	| RowVector Dimension
 	| ColVector Dimension
 	| UpperTriangular Dimension
 	| LowerTriangular Dimension

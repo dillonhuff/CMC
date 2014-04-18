@@ -17,7 +17,8 @@ data Function = FC Expression [[Expression]] [Expression] [Expression] [Expressi
 	deriving (Eq, Show)
 
 function :: Expression -> [Expression] -> [Expression] -> [Expression] -> Function
-function name args body returnVals = FC name (replicate (length args) ([] :: [Expression])) args body returnVals
+function name args body returnVals =
+	FC name (replicate (length args) ([] :: [Expression])) args body returnVals
 
 functionSpec name props args body returnVals = FC name props args body returnVals
 
@@ -57,7 +58,7 @@ float :: Float -> Expression
 float val = Matrix 1 1 [val]
 
 -- Returns either an error or a list of all identifiers in the
--- function (including input identifiers) along with their types
+-- function along with their types
 checkFunctionTypes :: Function -> Error [(Expression, Type)]
 checkFunctionTypes (FC name shapes args body returnVals) = outputTypes
 	where
@@ -79,6 +80,7 @@ idType (props, matName@(Identifier name)) = if (length props) > 1
 specialMatrixDims :: Expression -> Expression -> Type
 specialMatrixDims (Identifier shapeName) (Identifier idName) =
 	case shapeName of
+		"Scalar" -> defMatrix 1 1
 		"RowVector" -> leftDefMatrix 1 (idName ++ "-col")
 		"ColumnVector" -> rightDefMatrix (idName ++ "-row") 1
 		"UpperTriangular" -> genMatrix (idName ++ "-row") (idName ++ "-row")
@@ -160,4 +162,4 @@ toUnaryForm n = n
 
 -- Functions for conversion of expression tree into dataflow graph
 makeDataFlowGraph :: Function -> Error DataFlowGraph
-makeDataFlowGraph (FC _ sizeIds args body returnVals) = Succeeded $ emptyDataFlowGraph
+makeDataFlowGraph (FC name specialProps args body returnVals) = Succeeded $ emptyDataFlowGraph

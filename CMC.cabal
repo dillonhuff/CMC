@@ -17,11 +17,11 @@ cabal-version:       >=1.8
 executable CMC
   main-is:             Main.hs
   -- other-modules:       
-  build-depends:       base ==4.6.*, parsec
+  build-depends:       base ==4.6.*, parsec, containers
   hs-source-dirs:      src
 
 executable CMC-tests
   main-is:             Main.hs
   -- other-modules:       
-  build-depends:       base ==4.6.*, HUnit, parsec
+  build-depends:       base ==4.6.*, HUnit, parsec, containers
   hs-source-dirs:      test, src

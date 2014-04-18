@@ -2,6 +2,7 @@ module ExpressionTests(
 	expressionTests) where
 
 import Control.Monad
+import DataFlowGraph
 import ErrorHandling
 import Expression
 import Parser
@@ -12,7 +13,9 @@ expressionTests = do
 	testFunction (extractValue . (liftM fst) . (typeOfExpr [])) exprTypeCases
 	testFunction (extractValue . (liftM fst) . typeOfExpr testVars) exprWithVarsCases
 	testFunction (extractValue . ((=<<) checkFunctionTypes) . parseFunction) functionTypeCases
-	testFunction (extractValue . (liftM makeDataFlowGraph) . parseFunction) dataFlowTestCases
+	testFunction correctSizeGraph dataFlowTestCases
+
+correctSizeGraph = extractValue . liftM numNodes . (((=<<) makeDataFlowGraph) . parseFunction)
 
 exprTypeCases =
 	[oneMatrix
@@ -48,7 +51,7 @@ functionTypeCases =
 	,transposeMultDef]
 
 dataFlowTestCases =
-	[]
+	[noArguments]
 
 oneMatrix = ((matrix 2 4 [1, 2, 3, 4, 5, 6, 7, 8]), defMatrix 2 4)
 
@@ -113,3 +116,5 @@ transposeMult = ("func tpMul(A, B) Res = A' * B; return(Res)",
 	[(identifier "Res", genMatrix "A-col" "B-col")
 	,(identifier "A", genMatrix "B-row" "A-col")
 	,(identifier "B", genMatrix "B-row" "B-col")])
+
+noArguments = ("func otr() G = [1 2; 3 4]; return(G)", 2)

@@ -12,11 +12,11 @@ import DataFlowGraph
 import ErrorHandling
 import TypeSystem
 
-data Function = FC Expression [Expression] [Expression] [Expression]
+data Function = FC Expression [Expression] [Expression] [Expression] [Expression]
 	deriving (Eq, Show)
 
 function :: Expression -> [Expression] -> [Expression] -> [Expression] -> Function
-function name args body returnVals = FC name args body returnVals
+function name args body returnVals = FC name [] args body returnVals
 
 data Expression
 	= Identifier String
@@ -56,7 +56,7 @@ float val = Matrix 1 1 [val]
 -- Returns either an error or a list of all identifiers in the
 -- function (including input identifiers) along with their types
 checkFunctionTypes :: Function -> Error [(Expression, Type)]
-checkFunctionTypes (FC name args body returnVals) = outputTypes
+checkFunctionTypes (FC name shapes args body returnVals) = outputTypes
 	where
 		inputTypes = makeInputVars args
 		outputTypes = foldM nextExprTypes inputTypes body
@@ -139,5 +139,14 @@ toUnaryForm (Op "-") = (Op "unary--")
 toUnaryForm n = n
 
 -- Functions for conversion of expression tree into dataflow graph
-makeDataFlowGraph :: Function -> DataFlowGraph
-makeDataFlowGraph f = emptyDataFlowGraph
+makeDataFlowGraph :: Function -> Error DataFlowGraph
+makeDataFlowGraph (FC _ sizeIds args body returnVals) =
+	if allReturnValsAreComputed
+		then Succeeded $ makeGraph sizeIds initialVarTypes body
+		else Failed $ "Not all return values are computed in the function"
+	where
+		allReturnValsAreComputed = True
+		initialVarTypes = []
+
+makeGraph :: [Expression] -> [(Expression, Type)] -> [Expression] -> DataFlowGraph
+makeGraph sizeIds varTypes body = emptyDataFlowGraph

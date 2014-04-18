@@ -5,12 +5,15 @@ module DataProperties(
 -- that matrices may have, like shape (vector, matrix, upper triangular...)
 
 data Shape
-	= RowVector Int
-	| ColVector Int
-	| UpperTriangular Int Int
-	| LowerTriangular Int Int
-	| Symmetric Int Int
-	| General Int Int
+	= RowVector Dimension
+	| ColVector Dimension
+	| UpperTriangular Dimension Dimension
+	| LowerTriangular Dimension Dimension
+	| Symmetric Dimension Dimension
+	| General Dimension Dimension
 	deriving (Eq, Show)
 
-
+data Dimension
+	= GenericDim String
+	| NumberDim Int
+	deriving (Eq, Show)

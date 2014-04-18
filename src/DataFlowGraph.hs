@@ -1,6 +1,7 @@
 module DataFlowGraph(
 	DataFlowGraph,
-	emptyDataFlowGraph) where
+	emptyDataFlowGraph,
+	numNodes) where
 
 import Data.Map
 import DataProperties
@@ -8,9 +9,14 @@ import DataProperties
 emptyDataFlowGraph :: DataFlowGraph
 emptyDataFlowGraph = (empty, empty)
 
-type DataFlowGraph = (Map Int DataFlowNode, Map String Int)
+
+
+type DataFlowGraph = (Map Vertex (DataFlowNode, [Vertex]), Map String Vertex)
+
+numNodes :: DataFlowGraph -> Int
+numNodes (m1, m2) = size m1
 
 data DataFlowNode
-	= Data String Shape [Int]
-	| Op String Shape [Int]
+	= Data String Shape
+	| Op String Shape
 	deriving (Eq, Show)

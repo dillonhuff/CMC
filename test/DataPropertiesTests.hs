@@ -15,7 +15,22 @@ unopResultShapeTuple :: (String, Shape) -> Shape
 unopResultShapeTuple (opName, s) = unopResultShape opName s
 
 binopTestCases =
-	[]
+	[(("+", scalar, scalar), scalar)
+	,(("-", scalar, scalar), scalar)
+	,(("*", scalar, scalar), scalar)
+	,((".*", scalar, scalar), scalar)
+	,(("+", genGeneral "A" "B", genGeneral "A" "B"), genGeneral "A" "B")
+	,(("-", genGeneral "A" "B", genGeneral "A" "B"), genGeneral "A" "B")
+	,(("*", genGeneral "A" "B", genGeneral "A" "B"), genGeneral "A" "B")
+	,((".*", scalar, genGeneral "A" "G"), genGeneral "A" "G")
+	,(("+", genUpperTriangular "A", genUpperTriangular "A"), genUpperTriangular "A")
+	,(("-", genUpperTriangular "A", genUpperTriangular "A"), genUpperTriangular "A")
+	,(("*", genUpperTriangular "A", genUpperTriangular "A"), genUpperTriangular "A")
+	,((".*", scalar, genUpperTriangular "A"), genUpperTriangular "A")
+	,(("+", genLowerTriangular "A", genLowerTriangular "A"), genLowerTriangular "A")
+	,(("-", genLowerTriangular "A", genLowerTriangular "A"), genLowerTriangular "A")
+	,(("*", genLowerTriangular "A", genLowerTriangular "A"), genLowerTriangular "A")
+	,((".*", scalar, genLowerTriangular "A"), genLowerTriangular "A")]
 
 unopTestCases =
 	[(("'", scalar), scalar)

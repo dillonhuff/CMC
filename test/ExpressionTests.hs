@@ -169,30 +169,35 @@ twoScalarTimes = ("func tsa([Scalar] G, X, [Scalar] Y) K = G * Y; return(K)",
 oneScalarArg = ("func oneScalar([Scalar] P) X = P; return(X)",
 	annotatedFunction
 		"oneScalar"
+		[aId "P" scalar]
 		[aBinop "=" (aId "X" scalar) (aId "P" scalar) scalar]
 		[aId "X" scalar])
 
 noArgColVec = ("func oneMat() L = [1.2; 3.4]; return(L)",
 	annotatedFunction
 		"oneMat"
+		[]
 		[aBinop "=" (aId "L" (defColVec 2)) (aMat [1.2, 3.4] (defColVec 2)) (defColVec 2)]
 		[aId "L" (defColVec 2)])
 
 noArgRowVec = ("func oneMat() L = [1.2 3.4]; return(L)",
 	annotatedFunction
 		"oneMat"
+		[]
 		[aBinop "=" (aId "L" (defRowVec 2)) (aMat [1.2, 3.4] (defRowVec 2)) (defRowVec 2)]
 		[aId "L" (defRowVec 2)])
 
 noArgScalar = ("func oneMat() L = [-1.2e-3]; return(L)",
 	annotatedFunction
 		"oneMat"
+		[]
 		[aBinop "=" (aId "L" scalar) (aMat [-1.2e-3] scalar) scalar]
 		[aId "L" scalar])
 
 unaryOpUpperTriangular = ("func upT([UpperTriangular] T) X = T'; return(X)",
 	annotatedFunction
 		"upT"
+		[aId "T" (genUpperTriangular "T-row")]
 		[aBinop
 			"="
 			(aId "X" (genLowerTriangular "T-row"))
@@ -203,6 +208,7 @@ unaryOpUpperTriangular = ("func upT([UpperTriangular] T) X = T'; return(X)",
 unaryOpLowerTriangular = ("func upT([LowerTriangular] T) X = T'; return(X)",
 	annotatedFunction
 		"upT"
+		[aId "T" (genLowerTriangular "T-row")]
 		[aBinop
 			"="
 			(aId "X" (genUpperTriangular "T-row"))
@@ -214,6 +220,7 @@ binaryMultUpperTriangularColVec =
 	("func btr([UpperTriangular] U, [ColumnVector] R) K = U * R; return(K)",
 	annotatedFunction
 		"btr"
+		[aId "U" (genUpperTriangular "R-row"), aId "R" (genColVec "R-row")]
 		[aBinop
 			"="
 			(aId "K" (genColVec "R-row"))

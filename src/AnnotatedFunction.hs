@@ -5,10 +5,10 @@ module AnnotatedFunction(
 
 import DataProperties
 
-annotatedFunction :: String -> [AExpr] -> [AExpr] -> AnnotatedFunction
-annotatedFunction name body retVals= AF name body retVals
+annotatedFunction :: String -> [AExpr] -> [AExpr] -> [AExpr] -> AnnotatedFunction
+annotatedFunction name args body retVals = AF name args body retVals
 
-data AnnotatedFunction = AF String [AExpr] [AExpr]
+data AnnotatedFunction = AF String [AExpr] [AExpr] [AExpr]
 	deriving (Eq, Show)
 
 data AExpr

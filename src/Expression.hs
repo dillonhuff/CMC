@@ -173,7 +173,7 @@ annotateFunc f@(FC (Funcall name) specProps args body returnVals) =
 	case anBody of
 		Failed errMsg -> Failed errMsg
 		Succeeded annotatedBody -> Succeeded $ annotatedFunction 
-			name (reverse $ snd annotatedBody) (anRVs returnVals (fst annotatedBody))
+			name (anRVs args (fst annotatedBody)) (reverse $ snd annotatedBody) (anRVs returnVals (fst annotatedBody))
 	where
 		idTypes = checkFunctionTypes f
 		argTypes = liftM (filter (\(ident, _) -> elem ident args)) idTypes

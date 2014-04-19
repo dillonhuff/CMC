@@ -1,5 +1,6 @@
 module Main(main) where
 
+import AnnotatedFunctionTests
 import DataFlowGraphTests
 import DataPropertiesTests
 import ExpressionTests
@@ -14,3 +15,4 @@ main = do
 	expressionTests
 	dataFlowGraphTests
 	dataPropertiesTests
+	annotatedFunctionTests

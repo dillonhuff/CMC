@@ -1,9 +1,10 @@
 module AnnotatedFunction(
 	AnnotatedFunction, AExpr, aId, aBinop, aUnop, aMat,
 	shapeOf, getIdShape, nameOf,
-	annotatedFunction) where
+	annotatedFunction, linearMatrixCode) where
 
 import DataProperties
+import LinearMatrixCode
 
 annotatedFunction :: String -> [AExpr] -> [AExpr] -> [AExpr] -> AnnotatedFunction
 annotatedFunction name args body retVals = AF name args body retVals
@@ -41,3 +42,60 @@ aMat vals shape = AMat vals shape
 aId name shape = AIdent name shape
 aBinop name arg1 arg2 shape = ABinop name arg1 arg2 shape
 aUnop name arg shape = AUnop name arg shape
+
+-- Code for converting the annotated function into linear matrix code
+linearMatrixCode :: AnnotatedFunction -> MatCodeFunction
+linearMatrixCode (AF name args body returnVals) =
+	matCodeFunction name argData instrs returnData
+	where
+		argData = concat $ map (code . (toLinCode 0)) args
+		returnData = concat $ map (code . (toLinCode 0)) returnVals
+		instrs = aExprsToLinMatCodeInstructions body
+
+aExprsToLinMatCodeInstructions :: [AExpr] -> [LinMatCode]
+aExprsToLinMatCodeInstructions exprs =
+	exprsToCode 0 exprs
+
+exprsToCode :: Int -> [AExpr] -> [LinMatCode]
+exprsToCode _ [] = []
+exprsToCode n (e:rest) = (code $ toLinCode n e) ++ (exprsToCode (n + 1) rest)
+
+data CodeGenState = CGS { res :: LinMatCode, resNum :: Int, code :: [LinMatCode]}
+
+toLinCode :: Int -> AExpr -> CodeGenState
+toLinCode n (ABinop opName arg1 arg2 shape) =
+	CGS { res = (res a1CGS), resNum = finalNum, code = finalCode}
+	where
+		a1CGS = toLinCode n arg1
+		a2CGS = toLinCode (resNum a1CGS) arg2
+		finalNum = (resNum a2CGS)
+		opCode = binopCode opName shape a1CGS a2CGS
+		finalCode = (code a1CGS) ++ (code a2CGS) ++ opCode
+toLinCode n (AUnop opName arg shape) =
+	CGS { res = (res aCGS), resNum = resNum aCGS, code = finalCode}
+	where
+		aCGS = toLinCode n arg
+		opCode = unopCode opName shape aCGS
+		finalCode = (code aCGS) ++ opCode
+toLinCode n (AIdent name shape) = CGS {res = ident, resNum = n, code = []}
+	where
+		ident = genD name shape
+toLinCode n (AMat vals shape) = CGS {res = mat, resNum = n + 1, code = []}
+	where
+		mat = defD (rName n) vals shape
+
+binopCode :: String -> Shape -> CodeGenState -> CodeGenState -> [LinMatCode]
+binopCode opName shape a1CGS a2CGS = case opName of
+	"=" -> [copy (res a1CGS) (res a2CGS)]
+	"+" -> [add (res a1CGS) (res a2CGS) (genD (rName (resNum a2CGS)) shape)]
+	"-" -> [sub (res a1CGS) (res a2CGS) (genD (rName (resNum a2CGS)) shape)]
+	"*" -> [times (res a1CGS) (res a2CGS) (genD (rName (resNum a2CGS)) shape)]
+	".*" -> [sTimes (res a1CGS) (res a2CGS) (genD (rName (resNum a2CGS)) shape)]
+	_ -> error $ opName ++ " is not a binary operator"
+
+unopCode :: String -> Shape -> CodeGenState -> [LinMatCode]
+unopCode opName shape aCGS = case opName of
+	"-" -> [neg (res aCGS) (genD (rName (resNum aCGS)) shape)]
+	_ -> error $ opName ++ " is not a unary operator"
+
+rName n = "Res" ++ show n

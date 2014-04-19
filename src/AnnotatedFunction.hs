@@ -96,6 +96,8 @@ binopCode opName shape a1CGS a2CGS = case opName of
 unopCode :: String -> Shape -> CodeGenState -> [LinMatCode]
 unopCode opName shape aCGS = case opName of
 	"-" -> [neg (res aCGS) (genD (rName (resNum aCGS)) shape)]
+	"'" -> [trans (res aCGS) (genD (rName (resNum aCGS)) shape)]
+	"!" -> [inv (res aCGS) (genD (rName (resNum aCGS)) shape)]
 	_ -> error $ opName ++ " is not a unary operator"
 
 rName n = "Res" ++ show n

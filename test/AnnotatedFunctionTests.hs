@@ -16,7 +16,9 @@ testFuncs =
 	,noArgFuncSub
 	,noArgFuncTimes
 	,noArgFuncScalarTimes
-	,noArgFuncNeg]
+	,noArgFuncNeg
+	,noArgFuncInv
+	,noArgFuncTrans]
 
 noArgFuncAssign =
 	(annotatedFunction "no" [] [aBinop "=" (aId "K" scalar) (aMat [1] scalar) scalar] []
@@ -53,3 +55,19 @@ noArgFuncNeg =
 		[aUnop "-" (aId "S" (genSymmetric "I")) (genSymmetric "I")]
 		[]
 	,[neg (genD "S" (genSymmetric "I")) (genD "Res0" (genSymmetric "I"))])
+
+noArgFuncInv =
+	(annotatedFunction
+		"oh"
+		[]
+		[aUnop "!" (aId "S" (genSymmetric "I")) (genSymmetric "I")]
+		[]
+	,[inv (genD "S" (genSymmetric "I")) (genD "Res0" (genSymmetric "I"))])
+
+noArgFuncTrans =
+	(annotatedFunction
+		"oh"
+		[]
+		[aUnop "'" (aId "S" (genSymmetric "I")) (genSymmetric "I")]
+		[]
+	,[trans (genD "S" (genSymmetric "I")) (genD "Res0" (genSymmetric "I"))])

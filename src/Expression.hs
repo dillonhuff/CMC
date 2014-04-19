@@ -91,7 +91,9 @@ specialMatrixDims (Identifier shapeName) (Identifier idName) =
 
 -- TODO find better replacement for all of these liftM function calls
 nextExprTypes :: [(Expression, Type)] -> Expression -> Error [(Expression, Type)]
-nextExprTypes curIds (Assign (Identifier name) expr) = nextTypes
+nextExprTypes curIds (Assign (Identifier name) expr) = case lookup (Identifier name) curIds of
+	Just val -> Failed $ name ++ " has already been assigned and cannot be re-computed"
+	Nothing -> nextTypes
 	where
 		exprTypeAndConstraints = typeOfExpr curIds expr
 		newIdType = liftM fst exprTypeAndConstraints

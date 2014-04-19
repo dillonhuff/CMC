@@ -5,7 +5,7 @@ import LinearMatrixCode
 import ScalarLoopCode
 import TestUtils
 
-linearMatrixCodeTests = testFunction scalarLoopFunction testCases
+linearMatrixCodeTests = testFunction matInstrToScalarCode testCases
 
 testCases =
 	[]

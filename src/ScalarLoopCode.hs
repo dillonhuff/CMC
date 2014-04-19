@@ -1,19 +1,49 @@
 module ScalarLoopCode(
-	ScalarLoopFunction,
-	scalarLoopCode) where
+	ScalarLoopFunction, Iteration,
+	scalarLoopCode, scalarOp) where
 
 import DataProperties
 
-data ScalarLoopFunction = SCF String [SData] [Loop] [SData]
+data ScalarLoopFunction = SCF String [Declaration] [Iteration] [Declaration]
 	deriving (Eq, Show)
 
-data Loop = NONE
+data Iteration
+	= Iteration {
+		referenced :: [String],
+		updated :: [String],
+		starts :: [String],
+		ends :: [String],
+		body :: [Update]}
 	deriving (Eq, Show)
 
-data SData
-	= SGen String Shape
-	| SDef String [Float] Shape
+scalarOp :: String -> String -> String -> String -> Iteration
+scalarOp opName arg1 arg2 res =
+	Iteration {
+		referenced = [arg1, arg2, res],
+		updated = [res],
+		starts = [],
+		ends = [],
+		body = [(SRef res, Binop opName (SRef arg1) (SRef arg2))] }
+
+type Update = (SExpr, SExpr)
+
+-- TODO: Add more specific declarations later. For
+-- now all matrices will declare as GeneralMatrix
+-- regardless of special properties
+data Declaration
+	= Scalar String
+	| RowVector String String
+	| ColVector String String
+	| GeneralMatrix String String
 	deriving (Eq, Show)
 
-scalarLoopCode :: String -> [SData] -> [Loop] -> [SData] -> ScalarLoopFunction
+data SExpr
+	= SRef String
+	| VecRef String String
+	| MatRef String String String
+	| Binop String SExpr SExpr
+	| Unop String SExpr
+	deriving (Eq, Show)
+
+scalarLoopCode :: String -> [Declaration] -> [Iteration] -> [Declaration] -> ScalarLoopFunction
 scalarLoopCode name args body retVals = SCF name args body retVals

@@ -118,7 +118,13 @@ makeDimension t = if isTypeVar t
 data Dimension
 	= GenericDim String
 	| NumberDim Int
-	deriving (Eq, Show)
+	deriving (Eq)
+
+instance Show Dimension where
+	show = showDimension
+
+showDimension (GenericDim name) = name
+showDimension (NumberDim d) = show d
 
 scalar = Scalar
 defColVec d = ColVector (NumberDim d)

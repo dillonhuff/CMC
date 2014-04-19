@@ -14,7 +14,9 @@ main = do
 	let fileName = head arguments
 	fileHandle <- openFile fileName ReadMode
 	contents <- hGetContents fileHandle
-	putStrLn $ showLinMatCode $ liftM linearMatrixCode $ (parseFunction contents) >>= annotateFunc
+	let parsedFunc = (parseFunction contents) >>= annotateFunc
+	putStrLn $ show parsedFunc
+	putStrLn $ showLinMatCode $ liftM linearMatrixCode parsedFunc
 
 showLinMatCode code = case code of
 	Failed errMsg -> errMsg

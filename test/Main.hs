@@ -5,6 +5,7 @@ import DataFlowGraphTests
 import DataPropertiesTests
 import ExpressionTests
 import LexerTests
+import LinearMatrixCodeTests
 import ParserTests
 import TypeSystemTests
 
@@ -16,3 +17,4 @@ main = do
 	dataFlowGraphTests
 	dataPropertiesTests
 	annotatedFunctionTests
+	linearMatrixCodeTests

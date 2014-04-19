@@ -1,9 +1,10 @@
 module LinearMatrixCode(
 	MatCodeFunction, LinMatCode, matCodeFunction,
 	instructions, genD, defD, copy, add, sub, times,
-	sTimes, neg, inv, trans, result) where
+	sTimes, neg, inv, trans, result, scalarLoopFunction) where
 
 import DataProperties
+import ScalarLoopCode
 
 data MatCodeFunction = MCF String [LinMatCode] [LinMatCode] [LinMatCode]
 	deriving (Eq)
@@ -75,3 +76,7 @@ defD name vals shape = DefD name vals shape
 
 instructions :: MatCodeFunction -> [LinMatCode]
 instructions (MCF _ _ code _) = code
+
+-- Code for conversion to scalar loop form
+scalarLoopFunction :: MatCodeFunction -> ScalarLoopFunction
+scalarLoopFunction (MCF name args body retVals) = scalarLoopCode name [] [] []

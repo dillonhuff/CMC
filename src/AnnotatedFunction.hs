@@ -58,21 +58,23 @@ aExprsToLinMatCodeInstructions exprs =
 
 exprsToCode :: Int -> [AExpr] -> [LinMatCode]
 exprsToCode _ [] = []
-exprsToCode n (e:rest) = (code $ toLinCode n e) ++ (exprsToCode (n + 1) rest)
+exprsToCode n (e:rest) = (code $ eCode) ++ (exprsToCode (resNum eCode) rest)
+	where
+		eCode = toLinCode n e
 
 data CodeGenState = CGS { res :: LinMatCode, resNum :: Int, code :: [LinMatCode]}
 
 toLinCode :: Int -> AExpr -> CodeGenState
 toLinCode n (ABinop opName arg1 arg2 shape) =
-	CGS { res = (res a1CGS), resNum = finalNum, code = finalCode}
+	CGS { res = (result $ last opCode), resNum = finalNum, code = finalCode}
 	where
 		a1CGS = toLinCode n arg1
 		a2CGS = toLinCode (resNum a1CGS) arg2
-		finalNum = (resNum a2CGS)
+		finalNum = (resNum a2CGS) + 1
 		opCode = binopCode opName shape a1CGS a2CGS
 		finalCode = (code a1CGS) ++ (code a2CGS) ++ opCode
 toLinCode n (AUnop opName arg shape) =
-	CGS { res = (res aCGS), resNum = resNum aCGS, code = finalCode}
+	CGS { res = (result $ last opCode), resNum = (resNum aCGS) + 1, code = finalCode}
 	where
 		aCGS = toLinCode n arg
 		opCode = unopCode opName shape aCGS
@@ -86,7 +88,7 @@ toLinCode n (AMat vals shape) = CGS {res = mat, resNum = n + 1, code = []}
 
 binopCode :: String -> Shape -> CodeGenState -> CodeGenState -> [LinMatCode]
 binopCode opName shape a1CGS a2CGS = case opName of
-	"=" -> [copy (res a1CGS) (res a2CGS)]
+	"=" -> [copy (res a2CGS) (res a1CGS)]
 	"+" -> [add (res a1CGS) (res a2CGS) (genD (rName (resNum a2CGS)) shape)]
 	"-" -> [sub (res a1CGS) (res a2CGS) (genD (rName (resNum a2CGS)) shape)]
 	"*" -> [times (res a1CGS) (res a2CGS) (genD (rName (resNum a2CGS)) shape)]
@@ -100,4 +102,4 @@ unopCode opName shape aCGS = case opName of
 	"!" -> [inv (res aCGS) (genD (rName (resNum aCGS)) shape)]
 	_ -> error $ opName ++ " is not a unary operator"
 
-rName n = "Res" ++ show n
+rName n = "res" ++ show n

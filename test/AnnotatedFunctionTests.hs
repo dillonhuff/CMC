@@ -22,15 +22,15 @@ testFuncs =
 
 noArgFuncAssign =
 	(annotatedFunction "no" [] [aBinop "=" (aId "K" scalar) (aMat [1] scalar) scalar] []
-	,[copy (genD "K" scalar) (defD "Res0" [1] scalar)])
+	,[copy (defD "res0" [1] scalar) (genD "K" scalar)])
 
 noArgFuncAdd =
 	(annotatedFunction "no" [] [aBinop "+" (aId "K" scalar) (aMat [1] scalar) scalar] []
-	,[add (genD "K" scalar) (defD "Res0" [1] scalar) (genD "Res1" scalar)])
+	,[add (genD "K" scalar) (defD "res0" [1] scalar) (genD "res1" scalar)])
 
 noArgFuncSub =
 	(annotatedFunction "no" [] [aBinop "-" (aId "K" scalar) (aMat [1] scalar) scalar] []
-	,[sub (genD "K" scalar) (defD "Res0" [1] scalar) (genD "Res1" scalar)])
+	,[sub (genD "K" scalar) (defD "res0" [1] scalar) (genD "res1" scalar)])
 
 noArgFuncTimes =
 	(annotatedFunction
@@ -38,7 +38,7 @@ noArgFuncTimes =
 		[]
 		[aBinop "*" (aId "K" (genGeneral "a" "b")) (aId "X" (genGeneral "b" "c")) (genGeneral "a" "c")]
 		[]
-	,[times (genD "K" (genGeneral "a" "b")) (genD "X" (genGeneral "b" "c")) (genD "Res0" (genGeneral "a" "c"))])
+	,[times (genD "K" (genGeneral "a" "b")) (genD "X" (genGeneral "b" "c")) (genD "res0" (genGeneral "a" "c"))])
 
 noArgFuncScalarTimes =
 	(annotatedFunction
@@ -46,7 +46,7 @@ noArgFuncScalarTimes =
 		[]
 		[aBinop ".*" (aId "K" scalar) (aId "X" (genGeneral "b" "c")) (genGeneral "b" "c")]
 		[]
-	,[sTimes (genD "K" scalar) (genD "X" (genGeneral "b" "c")) (genD "Res0" (genGeneral "b" "c"))])
+	,[sTimes (genD "K" scalar) (genD "X" (genGeneral "b" "c")) (genD "res0" (genGeneral "b" "c"))])
 
 noArgFuncNeg =
 	(annotatedFunction
@@ -54,7 +54,7 @@ noArgFuncNeg =
 		[]
 		[aUnop "-" (aId "S" (genSymmetric "I")) (genSymmetric "I")]
 		[]
-	,[neg (genD "S" (genSymmetric "I")) (genD "Res0" (genSymmetric "I"))])
+	,[neg (genD "S" (genSymmetric "I")) (genD "res0" (genSymmetric "I"))])
 
 noArgFuncInv =
 	(annotatedFunction
@@ -62,7 +62,7 @@ noArgFuncInv =
 		[]
 		[aUnop "!" (aId "S" (genSymmetric "I")) (genSymmetric "I")]
 		[]
-	,[inv (genD "S" (genSymmetric "I")) (genD "Res0" (genSymmetric "I"))])
+	,[inv (genD "S" (genSymmetric "I")) (genD "res0" (genSymmetric "I"))])
 
 noArgFuncTrans =
 	(annotatedFunction
@@ -70,4 +70,4 @@ noArgFuncTrans =
 		[]
 		[aUnop "'" (aId "S" (genSymmetric "I")) (genSymmetric "I")]
 		[]
-	,[trans (genD "S" (genSymmetric "I")) (genD "Res0" (genSymmetric "I"))])
+	,[trans (genD "S" (genSymmetric "I")) (genD "res0" (genSymmetric "I"))])

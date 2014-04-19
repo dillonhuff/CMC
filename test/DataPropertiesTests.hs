@@ -45,7 +45,19 @@ unopTestCases =
 	,(("'", genSymmetric "A"), genSymmetric "A")
 	,(("'", genUpperTriangular "G"), genLowerTriangular "G")
 	,(("'", genLowerTriangular "G"), genUpperTriangular "G")
-	,(("'", genGeneral "T" "K"), genGeneral "T" "K")]
+	,(("'", genGeneral "T" "K"), genGeneral "T" "K")
+	,(("!", scalar), scalar)
+	,(("!", genSymmetric "A"), genSymmetric "A")
+	,(("!", genUpperTriangular "G"), genUpperTriangular "G")
+	,(("!", genLowerTriangular "G"), genLowerTriangular "G")
+	,(("!", genGeneral "T" "T"), genGeneral "T" "T")
+	,(("'", scalar), scalar)
+	,(("-", defRowVec 45), defRowVec 45)
+	,(("-", defColVec 2), defColVec 2)
+	,(("-", genSymmetric "A"), genSymmetric "A")
+	,(("-", genUpperTriangular "G"), genUpperTriangular "G")
+	,(("-", genLowerTriangular "G"), genLowerTriangular "G")
+	,(("-", genGeneral "T" "K"), genGeneral "T" "K")]
 
 makeShapeTestCases =
 	[((["Scalar"], defMatrix 1 1), scalar)

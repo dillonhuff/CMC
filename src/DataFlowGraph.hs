@@ -43,4 +43,4 @@ name (Data n _) = n
 name (Op n _) = n
 
 genData :: String -> Int -> Int -> DataFlowNode
-genData name r c = Data name (genNum r c)
+genData name r c = Data name (defGeneral r c)

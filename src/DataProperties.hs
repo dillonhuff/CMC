@@ -47,7 +47,7 @@ plusRes (General a b) _ = General a b
 plusRes _ (General a b) = General a b
 plusRes s1 s2 = s1
 
-minusRes (General a b) _ = General a b
+minusRes (General a b) u_ = General a b
 minusRes _ (General a b) = General a b
 minusRes s1 s2 = s1
 
@@ -65,13 +65,25 @@ timesRes s (General c d) = General (rowDim s) d
 timesRes t s = error $ "arg1 = " ++ show t ++ " and arg2 = " ++ show s
 
 unopResultShape :: String -> Shape -> Shape
-unopResultShape "'" (General r c) = General r c
-unopResultShape "'" (UpperTriangular d) = LowerTriangular d
-unopResultShape "'" (LowerTriangular d) = UpperTriangular d
-unopResultShape "'" (RowVector d) = ColVector d
-unopResultShape "'" (ColVector d) = RowVector d
-unopResultShape "'" (Symmetric d) = Symmetric d
-unopResultShape "'" Scalar = scalar
+unopResultShape op s = case op of
+	"'" -> transposeResultShape s
+	"!" -> inverseResultShape s
+	"-" -> s
+
+transposeResultShape :: Shape -> Shape
+transposeResultShape (General r c) = General r c
+transposeResultShape (UpperTriangular d) = LowerTriangular d
+transposeResultShape (LowerTriangular d) = UpperTriangular d
+transposeResultShape (RowVector d) = ColVector d
+transposeResultShape (ColVector d) = RowVector d
+transposeResultShape (Symmetric d) = Symmetric d
+transposeResultShape Scalar = scalar
+
+inverseResultShape (General r c) = General r r
+inverseResultShape (UpperTriangular d) = UpperTriangular d
+inverseResultShape (LowerTriangular d) = LowerTriangular d
+inverseResultShape (Symmetric d) = Symmetric d
+inverseResultShape Scalar = Scalar
 
 dimsToShape :: Int -> Int -> Shape
 dimsToShape 1 1 = Scalar

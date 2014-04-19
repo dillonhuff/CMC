@@ -86,6 +86,7 @@ specialMatrixDims (Identifier shapeName) (Identifier idName) =
 		"UpperTriangular" -> genMatrix (idName ++ "-row") (idName ++ "-row")
 		"LowerTriangular" -> genMatrix (idName ++ "-row") (idName ++ "-row")
 		"Symmetric" -> genMatrix (idName ++ "-row") (idName ++ "-row")
+		"General" -> genMatrix (idName ++ "-row") (idName ++ "-col")
 		_ -> error $ shapeName ++ " is not a valid matrix shape"
 
 -- TODO find better replacement for all of these liftM function calls

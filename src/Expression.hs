@@ -170,7 +170,7 @@ annotateFunc f@(FC (Funcall name) specProps args body returnVals) =
 	case anBody of
 		Failed errMsg -> Failed errMsg
 		Succeeded annotatedBody -> Succeeded $ annotatedFunction 
-			name (snd annotatedBody) (anRVs returnVals (fst annotatedBody))
+			name (reverse $ snd annotatedBody) (anRVs returnVals (fst annotatedBody))
 	where
 		idTypes = checkFunctionTypes f
 		argTypes = liftM (filter (\(ident, _) -> elem ident args)) idTypes
@@ -197,6 +197,11 @@ annotateExpr _ (Matrix r c vals) = aMat vals (dimsToShape r c)
 annotateExpr ids (UnaryOp (Op name) arg) = aUnop name anArg (unopResultShape name (shapeOf anArg))
 	where
 		anArg = annotateExpr ids arg
+annotateExpr ids (BinaryOp (Op name) arg1 arg2) = aBinop name anArg1 anArg2 resShape
+	where
+		anArg1 = annotateExpr ids arg1
+		anArg2 = annotateExpr ids arg2
+		resShape = binopResultShape name (shapeOf anArg1) (shapeOf anArg2)
 annotateExpr ids (Identifier n) = case getIdShape n ids of
 	Just shape -> aId n shape
 	Nothing -> error $ "The impossible happened: After type checking " ++ n ++ " has no shape\n" ++ show ids

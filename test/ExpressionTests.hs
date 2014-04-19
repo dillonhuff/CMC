@@ -64,7 +64,9 @@ funcAnnotationCases =
 	,noArgColVec
 	,noArgRowVec
 	,noArgScalar
-	,unaryOpUpperTriangular]
+	,unaryOpUpperTriangular
+	,unaryOpUpperTriangular
+	,binaryMultUpperTriangularColVec]
 
 oneMatrix = ((matrix 2 4 [1, 2, 3, 4, 5, 6, 7, 8]), defMatrix 2 4)
 
@@ -197,3 +199,28 @@ unaryOpUpperTriangular = ("func upT([UpperTriangular] T) X = T'; return(X)",
 			(aUnop "'" (aId "T" (genUpperTriangular "T-row")) (genLowerTriangular "T-row"))
 			(genLowerTriangular ("T-row"))]
 		[aId "X" (genLowerTriangular "T-row")])
+
+unaryOpLowerTriangular = ("func upT([LowerTriangular] T) X = T'; return(X)",
+	annotatedFunction
+		"upT"
+		[aBinop
+			"="
+			(aId "X" (genUpperTriangular "T-row"))
+			(aUnop "'" (aId "T" (genLowerTriangular "T-row")) (genUpperTriangular "T-row"))
+			(genUpperTriangular ("T-row"))]
+		[aId "X" (genLowerTriangular "T-row")])
+
+binaryMultUpperTriangularColVec =
+	("func btr([UpperTriangular] U, [ColumnVector] R) K = U * R; return(K)",
+	annotatedFunction
+		"btr"
+		[aBinop
+			"="
+			(aId "K" (genColVec "R-row"))
+			(aBinop
+				"*"
+				(aId "U" (genUpperTriangular "R-row"))
+				(aId "R" (genColVec "R-row"))
+				(genColVec "R-row"))
+			(genColVec "R-row")]
+		[aId "K" (genColVec "R-row")])

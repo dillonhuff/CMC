@@ -1,5 +1,5 @@
 module DataProperties(
-	Shape, genNum, scalar, makeShape,
+	Shape, defGeneral, scalar, makeShape,
 	defColVec, defRowVec, dimsToShape,
 	binopResultShape, unopResultShape,
 	genUpperTriangular, genLowerTriangular,
@@ -64,7 +64,6 @@ timesRes (General a b) s = General a (colDim s)
 timesRes s (General c d) = General (rowDim s) d
 timesRes t s = error $ "arg1 = " ++ show t ++ " and arg2 = " ++ show s
 
-
 unopResultShape :: String -> Shape -> Shape
 unopResultShape "'" (General r c) = General r c
 unopResultShape "'" (UpperTriangular d) = LowerTriangular d
@@ -90,9 +89,12 @@ shapeNames =
 makeShape :: [String] -> Type -> Shape
 makeShape propNames t = case getShapeName propNames of
 	"UpperTriangular" -> UpperTriangular (makeDimension $ rowDimension t)
+	"LowerTriangular" -> LowerTriangular (makeDimension $ rowDimension t)
 	"ColumnVector" -> ColVector (makeDimension $ rowDimension t)
 	"RowVector" -> RowVector (makeDimension $ colDimension t)
-	_ -> scalar
+	"Symmetric" -> Symmetric (makeDimension $ rowDimension $ t)
+	"Scalar" -> Scalar
+	_ -> General (makeDimension $ rowDimension t) (makeDimension $ colDimension t)
 
 getShapeName propNames = head $ filter (\x -> elem x shapeNames) propNames
 
@@ -109,10 +111,10 @@ data Dimension
 scalar = Scalar
 defColVec d = ColVector (NumberDim d)
 defRowVec d = RowVector (NumberDim d)
+defGeneral r c = General (NumberDim r) (NumberDim c)
 genColVec d = ColVector (GenericDim d)
 genRowVec d = RowVector (GenericDim d)
 genSymmetric d = Symmetric (GenericDim d)
 genUpperTriangular d = UpperTriangular (GenericDim d)
 genLowerTriangular d = LowerTriangular (GenericDim d)
 genGeneral r c = General (GenericDim r) (GenericDim c)
-genNum r c = General (NumberDim r) (NumberDim c)

@@ -36,12 +36,12 @@ showIterAndAlloc retVals (allocs, iter, frees) = allocStr ++ (show iter) ++ free
 		allocStr = "\n" ++ (concat $ map allocDec allocAndDeclare) ++ "\n" ++ (concat $ map alloc justAlloc)
 		freeStr = "\n" ++ (concat $ map freeDec frees)
 
+alloc sc@(Scalar name) = (cst $ "float " ++ name ++ "_v") ++ (cst $ name ++ " = &" ++ name ++ "_v");
 alloc rv@(RowVector name d) = cst $ name ++ " = allocate_DataBlock(1, " ++ d ++ ")"
 alloc rv@(ColVector name d) = cst $ name ++ " = allocate_DataBlock(" ++ d ++ ", 1)"
 alloc gm@(GeneralMatrix name r c) = cst $ name ++ " = allocate_DataBlock(" ++ r ++ "," ++ c ++ ")" 
-alloc t = ""
 
-allocDec sc@(Scalar _) = cst $ show sc
+allocDec sc@(Scalar name) = (cst $ "float " ++ name ++ "_v") ++ (cst $ show sc ++  " = &" ++ name ++ "_v")
 allocDec rv@(RowVector _ d) = cst $ show rv ++  " = allocate_DataBlock(1, " ++ d ++ ")"
 allocDec rv@(ColVector _ d) = cst $ show rv ++  " = allocate_DataBlock(" ++ d ++ ", 1)"
 allocDec gm@(GeneralMatrix _ r c) = cst $ show gm ++ " = allocate_DataBlock(" ++ r ++ "," ++ c ++ ")" 
@@ -177,7 +177,7 @@ data Declaration
 instance Show Declaration where
 	show = showDeclaration
 
-showDeclaration (Scalar s) = "float " ++ s
+showDeclaration (Scalar s) = "float *" ++ s
 showDeclaration (RowVector s size) = "ROW_VECTOR " ++ s
 showDeclaration (ColVector s size) = "COL_VECTOR " ++ s
 showDeclaration (GeneralMatrix s r c) = "MATRIX " ++ s
@@ -204,7 +204,7 @@ instance Show SExpr where
 	show = showSExpr
 
 showSExpr :: SExpr -> String
-showSExpr (SRef n) = n
+showSExpr (SRef n) = "*" ++ n
 showSExpr (VecRef n i) = n ++ "->elems[" ++ i ++ "]"
 showSExpr (MatRef n i j) = n ++ "->elems[" ++ n ++ "->row*" ++ i ++ "" ++ "+" ++ j ++ "]"
 showSExpr (Binop n s1 s2) = show s1 ++ n ++ show s2

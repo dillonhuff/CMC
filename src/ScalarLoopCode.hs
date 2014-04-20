@@ -36,7 +36,7 @@ showIterAndAlloc retVals (allocs, iter, frees) = allocStr ++ (show iter) ++ free
 		allocStr = "\n" ++ (concat $ map allocDec allocAndDeclare) ++ "\n" ++ (concat $ map alloc justAlloc)
 		freeStr = "\n" ++ (concat $ map freeDec frees)
 
-alloc sc@(Scalar name) = (cst $ "float " ++ name ++ "_v") ++ (cst $ name ++ " = &" ++ name ++ "_v");
+alloc sc@(Scalar name) = ""--(cst $ "float " ++ name ++ "_v") ++ (cst $ name ++ " = &" ++ name ++ "_v");
 alloc rv@(RowVector name d) = cst $ name ++ " = allocate_DataBlock(1, " ++ d ++ ")"
 alloc rv@(ColVector name d) = cst $ name ++ " = allocate_DataBlock(" ++ d ++ ", 1)"
 alloc gm@(GeneralMatrix name r c) = cst $ name ++ " = allocate_DataBlock(" ++ r ++ "," ++ c ++ ")" 

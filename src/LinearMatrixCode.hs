@@ -1,8 +1,7 @@
 module LinearMatrixCode(
 	MatCodeFunction, LinMatCode, matCodeFunction,
 	instructions, genD, defD, copy, add, sub, times,
-	sTimes, neg, inv, trans, result, scalarLoopFunction,
-	matInstrToScalarCode) where
+	sTimes, neg, inv, trans, result, scalarLoopFunction) where
 
 import DataProperties
 import ScalarLoopCode
@@ -78,6 +77,3 @@ toDec (DefD name _ shape) = case dimensionStrings shape of
 	("1", d) -> rDec name d
 	(d, "1") -> cDec name d
 	(r, c) -> gmDec name r c
-
-matInstrToScalarCode :: LinMatCode -> Iteration
-matInstrToScalarCode t = scalarOp "" "" "" ""

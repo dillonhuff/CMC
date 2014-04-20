@@ -74,19 +74,19 @@ idType :: ([Expression], Expression) -> Type
 idType (props, matName@(Identifier name)) = if (length props) > 1
 	then error $ show matName ++ " has more than 1 shape" -- As more properties are added this will be changed
 	else if length props == 0
-		then genMatrix (name ++ "-row") (name ++ "-col")
+		then genMatrix (name ++ "->row") (name ++ "->col")
 		else specialMatrixDims (head props) matName
 
 specialMatrixDims :: Expression -> Expression -> Type
 specialMatrixDims (Identifier shapeName) (Identifier idName) =
 	case shapeName of
 		"Scalar" -> defMatrix 1 1
-		"RowVector" -> leftDefMatrix 1 (idName ++ "-col")
-		"ColumnVector" -> rightDefMatrix (idName ++ "-row") 1
-		"UpperTriangular" -> genMatrix (idName ++ "-row") (idName ++ "-row")
-		"LowerTriangular" -> genMatrix (idName ++ "-row") (idName ++ "-row")
-		"Symmetric" -> genMatrix (idName ++ "-row") (idName ++ "-row")
-		"General" -> genMatrix (idName ++ "-row") (idName ++ "-col")
+		"RowVector" -> leftDefMatrix 1 (idName ++ "->col")
+		"ColumnVector" -> rightDefMatrix (idName ++ "->row") 1
+		"UpperTriangular" -> genMatrix (idName ++ "->row") (idName ++ "->row")
+		"LowerTriangular" -> genMatrix (idName ++ "->row") (idName ++ "->row")
+		"Symmetric" -> genMatrix (idName ++ "->row") (idName ++ "->row")
+		"General" -> genMatrix (idName ++ "->row") (idName ++ "->col")
 		_ -> error $ shapeName ++ " is not a valid matrix shape"
 
 -- TODO find better replacement for all of these liftM function calls

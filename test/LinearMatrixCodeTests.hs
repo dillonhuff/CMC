@@ -12,7 +12,8 @@ testCases =
 	[oneArgDec
 	,twoArgDec
 	,oneRetDec
-	,twoRetDec]
+	,twoRetDec
+	,unaryNegGen]
 
 oneArgDec =
 	(matCodeFunction "" [(genD "X" (genGeneral "a" "b"))] [] []
@@ -29,3 +30,11 @@ oneRetDec =
 twoRetDec =
 	(matCodeFunction "" [] [] [defD "X" [1, 2] (defColVec 2), genD "U" (genUpperTriangular "A")]
 	,scalarLoopCode "" [] [] [cDec "X" "2", gmDec "U" "A" "A"])
+
+unaryNegGen =
+	(matCodeFunction
+		""
+		[]
+		[neg (genD "X" (genGeneral "X-row" "X-col")) (genD "res0" (genGeneral "X-row" "X-col"))]
+		[]
+	,scalarLoopCode "" [] [] [])

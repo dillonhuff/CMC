@@ -62,7 +62,22 @@ instructions (MCF _ _ code _) = code
 
 -- Code for conversion to scalar loop form
 scalarLoopFunction :: MatCodeFunction -> ScalarLoopFunction
-scalarLoopFunction (MCF name args body retVals) = scalarLoopCode name [] [] []
+scalarLoopFunction (MCF name args body retVals) = scalarLoopCode name argDecs [] retDecs
+	where
+		argDecs = map toDec args
+		retDecs = map toDec retVals
+
+toDec :: LinMatCode -> Declaration
+toDec (GenD name shape) = case dimensionStrings shape of
+	("1", "1") -> sDec name
+	("1", d) -> rDec name d
+	(d, "1") -> cDec name d
+	(r, c) -> gmDec name r c
+toDec (DefD name _ shape) = case dimensionStrings shape of
+	("1", "1") -> sDec name
+	("1", d) -> rDec name d
+	(d, "1") -> cDec name d
+	(r, c) -> gmDec name r c
 
 matInstrToScalarCode :: LinMatCode -> Iteration
 matInstrToScalarCode t = scalarOp "" "" "" ""

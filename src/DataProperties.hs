@@ -4,7 +4,7 @@ module DataProperties(
 	binopResultShape, unopResultShape,
 	genUpperTriangular, genLowerTriangular,
 	genGeneral, genSymmetric, genColVec,
-	genRowVec) where
+	genRowVec, dimensionStrings) where
 
 import TypeSystem
 
@@ -20,6 +20,15 @@ data Shape
 	| Symmetric Dimension
 	| General Dimension Dimension
 	deriving (Eq, Show)
+
+dimensionStrings :: Shape -> (String, String)
+dimensionStrings Scalar = ("1", "1")
+dimensionStrings (RowVector d) = ("1", show d)
+dimensionStrings (ColVector d) = (show d, "1")
+dimensionStrings (UpperTriangular d) = (show d, show d)
+dimensionStrings (LowerTriangular d) = (show d, show d)
+dimensionStrings (Symmetric d) = (show d, show d)
+dimensionStrings (General r c) = (show r, show c)
 
 rowDim :: Shape -> Dimension
 rowDim Scalar = NumberDim 1

@@ -3,25 +3,58 @@ module ScalarLoopCode(
 	Declaration, iterateOver, toRef,
 	scalarLoopCode, assign, swap,
 	sDec, cDec, rDec, gmDec,
-	uOp, bOp) where
+	uOp, bOp, AllocationList) where
 
 import DataProperties
 
-scalarLoopCode :: String -> [Declaration] -> [Iteration] -> [Declaration] -> ScalarLoopFunction
-scalarLoopCode name args body retVals = SCF name args body retVals
+scalarLoopCode :: String -> AllocationList -> [Declaration] -> [Iteration] -> [Declaration] -> ScalarLoopFunction
+scalarLoopCode name allocs args body retVals = SCF name allocs args body retVals
 
-data ScalarLoopFunction = SCF String [Declaration] [Iteration] [Declaration]
+type AllocationList = [([Declaration], [Declaration])]
+
+data ScalarLoopFunction = SCF String AllocationList [Declaration] [Iteration] [Declaration]
 	deriving (Eq)
 
 instance Show ScalarLoopFunction where
 	show = showSLF
 
-showSLF (SCF name argDecs body retVals) = defines ++ funcDec ++ bodyStr ++ retSt ++ "\n}"
+showSLF (SCF name allocList argDecs body retVals) = defines ++ funcDec ++ bodyStr ++ retSt ++ "\n}"
 	where
-		defines = cTypeDef dataBlockStruct dataBlockNames ++ "\n"
+		defines = cInclude "<stdlib.h>" ++ cTypeDef dataBlockStruct dataBlockNames ++ "\n" ++ allocDataBlock ++ freeDataBlock ++ "\n"
 		funcDec = "void " ++ name ++ "(" ++ (argList (argDecs ++ retVals)) ++ ") {"
-		bodyStr = indent $  intDecs ++ (concat $ map (((++) "\n") . show) body)
+		funcBody = allocsFreesAndLoops allocList body retVals
+		bodyStr = indent $  intDecs ++ funcBody
 		retSt = indent $ "\nreturn;"
+
+allocsFreesAndLoops allocList body retVals =
+	concat $ map (showIterAndAlloc retVals) (mergeIterAlloc allocList body)
+
+showIterAndAlloc retVals (allocs, iter, frees) = allocStr ++ (show iter) ++ freeStr
+	where
+		justAlloc = filter (\x -> elem x retVals) allocs-- Return values are declared in function header
+		allocAndDeclare = filter (\x -> not $ elem x justAlloc) allocs
+		allocStr = "\n" ++ (concat $ map allocDec allocAndDeclare) ++ "\n" ++ (concat $ map alloc justAlloc)
+		freeStr = "\n" ++ (concat $ map freeDec frees)
+
+alloc rv@(RowVector name d) = cst $ name ++ " = allocate_DataBlock(1, " ++ d ++ ")"
+alloc rv@(ColVector name d) = cst $ name ++ " = allocate_DataBlock(" ++ d ++ ", 1)"
+alloc gm@(GeneralMatrix name r c) = cst $ name ++ " = allocate_DataBlock(" ++ r ++ "," ++ c ++ ")" 
+alloc t = ""
+
+allocDec sc@(Scalar _) = cst $ show sc
+allocDec rv@(RowVector _ d) = cst $ show rv ++  " = allocate_DataBlock(1, " ++ d ++ ")"
+allocDec rv@(ColVector _ d) = cst $ show rv ++  " = allocate_DataBlock(" ++ d ++ ", 1)"
+allocDec gm@(GeneralMatrix _ r c) = cst $ show gm ++ " = allocate_DataBlock(" ++ r ++ "," ++ c ++ ")" 
+
+freeDec (RowVector name _) = cst $ "free_DataBlock(" ++ name ++ ")"
+freeDec (ColVector name _) = cst $ "free_DataBlock(" ++ name ++ ")"
+freeDec (GeneralMatrix name _ _) = cst $ "free_DataBlock(" ++ name ++ ")"
+freeDec a = ""
+
+mergeIterAlloc :: AllocationList -> [Iteration] -> [([Declaration], Iteration, [Declaration])]
+--mergeIterAlloc t x = error $ "Should not get " ++ show t ++ " " ++ show x
+mergeIterAlloc [] [] = []
+mergeIterAlloc ((alloc, free):restMem) (iter:restIter) = ((alloc, iter, free):(mergeIterAlloc restMem restIter))
 
 argList [] = []
 argList (arg:[]) = show arg
@@ -50,7 +83,9 @@ iteration refs ups st en b = Iteration {
 instance Show Iteration where
 	show = showIteration
 
-showIteration (Iteration _ _ st en bod) = showLoops ['i'..'z'] st en bod
+showIteration (Iteration _ updated st en bod) = showLoops ['i'..'z'] st en bod
+
+declare name = cst $ "MATRIX " ++ name
 
 showLoops :: [Char] -> [String] -> [String] -> [Update] -> String
 showLoops (v:restVars) (start:restSts) (end:restEnds) updates = dec ++ loopBody ++ "\n}"
@@ -189,6 +224,7 @@ bOp o s1 s2 = Binop o s1 s2
 uOp o s = Unop o s
 
 -- Helper functions for translation to C code
+
 csts :: [String] -> String
 csts statements = concat $ map cst statements
 
@@ -202,5 +238,11 @@ indent (c:rest) = (c:(indent rest))
 
 cTypeDef t s = cst $ "typedef " ++ t ++ " " ++ s
 
+cInclude name = "#include " ++ name ++ "\n"
+
 dataBlockStruct = "struct DataBlock {\n\tfloat *elems;\n\tint row;\n\tint col;\n}"
 dataBlockNames = " *MATRIX, *COL_VECTOR, *ROW_VECTOR"
+
+allocDataBlock = "struct DataBlock *allocate_DataBlock(int num_rows, int num_cols) { struct DataBlock *new_data = (struct DataBlock *) malloc(sizeof(struct DataBlock)); new_data->elems = (float *) malloc(sizeof(float)*num_cols*num_rows); return new_data; }\n"
+
+freeDataBlock = "void free_DataBlock(struct DataBlock *to_free) { free(to_free->elems); free(to_free); }\n"

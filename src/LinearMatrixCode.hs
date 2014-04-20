@@ -61,11 +61,29 @@ instructions (MCF _ _ code _) = code
 
 -- Code for conversion to scalar loop form
 scalarLoopFunction :: MatCodeFunction -> ScalarLoopFunction
-scalarLoopFunction (MCF name args body retVals) = scalarLoopCode name argDecs scalarCode retDecs
+scalarLoopFunction (MCF name args body retVals) = scalarLoopCode name allocs argDecs scalarCode retDecs
 	where
 		argDecs = map toDec args
 		retDecs = map toDec retVals
+		bodyDecs = map getDec body
+		allocs = computeAllocations argDecs bodyDecs retDecs
 		scalarCode = map instrToScalarCode body
+
+getDec (Binop _ l1 l2 l3) = map toDec [l1, l2, l3]
+getDec (Unop _ l1 l2) = map toDec [l1, l2]
+
+computeAllocations :: [Declaration] -> [[Declaration]] -> [Declaration] -> AllocationList
+computeAllocations args body retVals = zip allocs frees
+	where
+		allocs = allocations args body
+		frees = reverse $ allocations (args ++ retVals) (reverse body)
+
+allocations :: [Declaration] -> [[Declaration]] -> [[Declaration]]
+allocations _ [] = []
+allocations alreadyAllocated (decs:rest) = (unallocated:(allocations nextAllocated rest))
+		where
+			unallocated = filter (\d -> not $ elem d alreadyAllocated) decs
+			nextAllocated = unallocated ++ alreadyAllocated
 
 toDec :: LinMatCode -> Declaration
 toDec (GenD name shape) = case dimensionStrings shape of

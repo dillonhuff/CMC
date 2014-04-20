@@ -14,7 +14,7 @@ instance Show MatCodeFunction where
 
 showMatCodeFunc :: MatCodeFunction -> String
 showMatCodeFunc (MCF name args body retVals) =
-	showCodeBlock body
+	show args ++ "\n" ++ showCodeBlock body ++ "\n" ++ show retVals
 
 showCodeBlock body = concat $ map (\instr -> ('\n':(show instr))) body
 
@@ -61,10 +61,11 @@ instructions (MCF _ _ code _) = code
 
 -- Code for conversion to scalar loop form
 scalarLoopFunction :: MatCodeFunction -> ScalarLoopFunction
-scalarLoopFunction (MCF name args body retVals) = scalarLoopCode name argDecs [] retDecs
+scalarLoopFunction (MCF name args body retVals) = scalarLoopCode name argDecs scalarCode retDecs
 	where
 		argDecs = map toDec args
 		retDecs = map toDec retVals
+		scalarCode = map instrToScalarCode body
 
 toDec :: LinMatCode -> Declaration
 toDec (GenD name shape) = case dimensionStrings shape of
@@ -77,3 +78,38 @@ toDec (DefD name _ shape) = case dimensionStrings shape of
 	("1", d) -> rDec name d
 	(d, "1") -> cDec name d
 	(r, c) -> gmDec name r c
+
+-- TODO: Fix reference generation hack and figure out how to deal with multiplication and inversion
+-- as well as vector transpose
+instrToScalarCode (Unop "neg" arg res) = iterateOver argDec (assign (toRef resDec) (uOp "-" (toRef argDec)))
+	where
+		argDec = toDec arg
+		resDec = toDec res
+instrToScalarCode (Unop "trans" arg res) = iterateOver argDec (swap (toRef resDec) (toRef argDec))
+	where
+		argDec = toDec arg
+		resDec = toDec res
+instrToScalarCode (Unop "copy" arg res) = iterateOver argDec (assign (toRef resDec) (toRef argDec))
+	where
+		argDec = toDec arg
+		resDec = toDec res
+
+instrToScalarCode (Binop "add" arg1 arg2 res) =
+	iterateOver resDec (assign (toRef resDec) (bOp "+" (toRef arg1Dec) (toRef arg2Dec)))
+	where
+		arg1Dec = toDec arg1
+		arg2Dec = toDec arg2
+		resDec = toDec res
+instrToScalarCode (Binop "sub" arg1 arg2 res) =
+	iterateOver resDec (assign (toRef resDec) (bOp "-" (toRef arg1Dec) (toRef arg2Dec)))
+	where
+		arg1Dec = toDec arg1
+		arg2Dec = toDec arg2
+		resDec = toDec res
+instrToScalarCode (Binop "stimes" arg1 arg2 res) =
+	iterateOver resDec (assign (toRef resDec) (bOp "*" (toRef arg1Dec) (toRef arg2Dec)))
+	where
+		arg1Dec = toDec arg1
+		arg2Dec = toDec arg2
+		resDec = toDec res
+instrToScalarCode t = error $ "iteration for " ++ show t

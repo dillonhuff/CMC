@@ -48,8 +48,8 @@ linearMatrixCode :: AnnotatedFunction -> MatCodeFunction
 linearMatrixCode (AF name args body returnVals) =
 	matCodeFunction name argData instrs returnData
 	where
-		argData = concat $ map (code . (toLinCode 0)) args
-		returnData = concat $ map (code . (toLinCode 0)) returnVals
+		argData = map (res . (toLinCode 0)) args
+		returnData = map (res . (toLinCode 0)) returnVals
 		instrs = aExprsToLinMatCodeInstructions body
 
 aExprsToLinMatCodeInstructions :: [AExpr] -> [LinMatCode]

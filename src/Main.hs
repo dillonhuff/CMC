@@ -16,8 +16,14 @@ main = do
 	contents <- hGetContents fileHandle
 	let parsedFunc = (parseFunction contents) >>= annotateFunc
 	putStrLn $ show parsedFunc
-	putStrLn $ showLinMatCode $ liftM linearMatrixCode parsedFunc
+	let lmc = liftM linearMatrixCode parsedFunc
+	putStrLn $ show $ lmc
+	case lmc of
+		Failed errMsg -> displayError errMsg
+		Succeeded linCode -> showSuccessAndWriteToFile $ scalarLoopFunction linCode
 
-showLinMatCode code = case code of
-	Failed errMsg -> errMsg
-	Succeeded linCode -> show linCode
+displayError errMsg = putStrLn errMsg
+
+showSuccessAndWriteToFile scalarCode = do
+	writeFile "CMC_out.c" (show scalarCode)
+	putStrLn "Success!"

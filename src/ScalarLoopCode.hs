@@ -1,6 +1,6 @@
 module ScalarLoopCode(
 	ScalarLoopFunction, Iteration,
-	Declaration, iterateOver, toRef,
+	Declaration, iterateOver, matMulIteration, toRef,
 	scalarLoopCode, assign, swap,
 	sDec, cDec, rDec, gmDec,
 	uOp, bOp, AllocationList) where
@@ -36,7 +36,7 @@ showIterAndAlloc retVals (allocs, iter, frees) = allocStr ++ (show iter) ++ free
 		allocStr = "\n" ++ (concat $ map allocDec allocAndDeclare) ++ "\n" ++ (concat $ map alloc justAlloc)
 		freeStr = "\n" ++ (concat $ map freeDec frees)
 
-alloc sc@(Scalar name) = ""--(cst $ "float " ++ name ++ "_v") ++ (cst $ name ++ " = &" ++ name ++ "_v");
+alloc sc@(Scalar name) = ""
 alloc rv@(RowVector name d) = cst $ name ++ " = allocate_DataBlock(1, " ++ d ++ ")"
 alloc rv@(ColVector name d) = cst $ name ++ " = allocate_DataBlock(" ++ d ++ ", 1)"
 alloc gm@(GeneralMatrix name r c) = cst $ name ++ " = allocate_DataBlock(" ++ r ++ "," ++ c ++ ")" 
@@ -102,6 +102,21 @@ forDec var start end = "for (" ++ startCond ++ endCond ++ updateRule ++ ") {"
 		startCond = var ++ " = " ++ start ++ "; "
 		endCond = var ++ " < " ++ end ++ "; "
 		updateRule = var ++ "++"
+
+matMulIteration :: Declaration -> Declaration -> Declaration -> Iteration
+matMulIteration (GeneralMatrix n1 r1 c1) (GeneralMatrix n2 r2 c2) (GeneralMatrix n3 r3 c3) = mmulIter
+	where
+		m1Ref = (MatRef n1 "i" "k")
+		m2Ref = (MatRef n2 "k" "j")
+		resRef = (MatRef n3 "i" "j")
+		u = assign resRef (bOp "+" resRef (bOp "*" m1Ref m2Ref))
+		mmulIter = Iteration {
+			referenced = refd u,
+			updated = upd u,
+			starts = ["0", "0", "0"],
+			ends = [r1, c2, c1],
+			body = [u]
+		}
 
 iterateOver :: Declaration -> Update -> Iteration
 iterateOver (Scalar n) u =

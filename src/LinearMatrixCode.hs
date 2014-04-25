@@ -111,7 +111,6 @@ instrToScalarCode (Unop "copy" arg res) = iterateOver argDec (assign (toRef resD
 	where
 		argDec = toDec arg
 		resDec = toDec res
-
 instrToScalarCode (Binop "add" arg1 arg2 res) =
 	iterateOver resDec (assign (toRef resDec) (bOp "+" (toRef arg1Dec) (toRef arg2Dec)))
 	where
@@ -130,4 +129,11 @@ instrToScalarCode (Binop "stimes" arg1 arg2 res) =
 		arg1Dec = toDec arg1
 		arg2Dec = toDec arg2
 		resDec = toDec res
+instrToScalarCode (Binop "times" arg1 arg2 res) =
+	matMulIteration arg1Dec arg2Dec resDec
+	where
+		arg1Dec = toDec arg1
+		arg2Dec = toDec arg2
+		resDec = toDec res
+
 instrToScalarCode t = error $ "iteration for " ++ show t

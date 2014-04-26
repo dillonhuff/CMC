@@ -137,3 +137,5 @@ instrToScalarCode (Binop "times" arg1 arg2 res) =
 		resDec = toDec res
 
 instrToScalarCode t = error $ "iteration for " ++ show t
+
+-- Code for conversion to assembly
